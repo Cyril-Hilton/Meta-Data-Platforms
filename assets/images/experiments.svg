@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="260" viewBox="0 0 420 260" role="img" aria-label="A/B experiments illustration">
+  <rect width="420" height="260" rx="34" fill="#061228"/>
+  <rect x="66" y="66" width="128" height="128" rx="28" fill="#0f172a" stroke="#38bdf8" stroke-width="5"/>
+  <rect x="226" y="66" width="128" height="128" rx="28" fill="#0f172a" stroke="#7c3aed" stroke-width="5"/>
+  <text x="111" y="146" fill="#67e8f9" font-family="Arial" font-size="58" font-weight="900">A</text>
+  <text x="270" y="146" fill="#a78bfa" font-family="Arial" font-size="58" font-weight="900">B</text>
+</svg>

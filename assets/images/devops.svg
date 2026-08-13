@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="260" viewBox="0 0 420 260" role="img" aria-label="DevOps workflow illustration">
+  <rect width="420" height="260" rx="34" fill="#061228"/>
+  <circle cx="116" cy="132" r="45" fill="#0f172a" stroke="#38bdf8" stroke-width="5"/>
+  <circle cx="304" cy="132" r="45" fill="#0f172a" stroke="#38bdf8" stroke-width="5"/>
+  <path d="M161 132h98" stroke="#67e8f9" stroke-width="12" stroke-linecap="round"/>
+  <path d="M236 104l31 28-31 28" fill="none" stroke="#67e8f9" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M94 132l16 16 30-36M282 132l16 16 30-36" fill="none" stroke="#34d399" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

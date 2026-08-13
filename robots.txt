@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /cron/
+Disallow: /includes/
+Disallow: /storage/
+
+Sitemap: https://metadataplatforms.9yttrybe.com/sitemap.xml

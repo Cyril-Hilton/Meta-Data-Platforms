@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="260" viewBox="0 0 420 260" role="img" aria-label="Forms workflow illustration">
+  <rect width="420" height="260" rx="34" fill="#061228"/>
+  <rect x="104" y="42" width="212" height="176" rx="24" fill="#0f172a" stroke="#38bdf8" stroke-width="5"/>
+  <path d="M144 92h132M144 130h132M144 168h74" stroke="#bae6fd" stroke-width="10" stroke-linecap="round"/>
+  <path d="M116 91h11M116 129h11M116 167h11" stroke="#67e8f9" stroke-width="10" stroke-linecap="round"/>
+</svg>

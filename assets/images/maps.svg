@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="260" viewBox="0 0 420 260" role="img" aria-label="Map grid illustration">
+  <rect width="420" height="260" rx="34" fill="#061228"/>
+  <path d="M48 62h324M48 124h324M48 186h324M110 34v192M204 34v192M298 34v192" stroke="#38bdf8" stroke-opacity=".24" stroke-width="4"/>
+  <path d="M112 175c56-86 124-100 198-54" stroke="#67e8f9" stroke-width="12" stroke-linecap="round" fill="none"/>
+  <path d="M214 73c-34 0-62 28-62 62 0 48 62 95 62 95s62-47 62-95c0-34-28-62-62-62z" fill="#7c3aed"/>
+  <circle cx="214" cy="135" r="23" fill="#f8fbff"/>
+</svg>

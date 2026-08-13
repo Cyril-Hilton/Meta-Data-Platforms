@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="260" viewBox="0 0 420 260" role="img" aria-label="Gemini ecosystem illustration">
+  <rect width="420" height="260" rx="34" fill="#061228"/>
+  <path d="M210 38c18 55 45 82 100 100-55 18-82 45-100 100-18-55-45-82-100-100 55-18 82-45 100-100z" fill="#0f172a" stroke="#a78bfa" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M110 62c8 24 20 36 44 44-24 8-36 20-44 44-8-24-20-36-44-44 24-8 36-20 44-44zM315 146c8 24 20 36 44 44-24 8-36 20-44 44-8-24-20-36-44-44 24-8 36-20 44-44z" fill="#38bdf8" fill-opacity=".72"/>
+</svg>

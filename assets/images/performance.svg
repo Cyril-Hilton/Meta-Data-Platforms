@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="260" viewBox="0 0 420 260" role="img" aria-label="Performance speedometer illustration">
+  <rect width="420" height="260" rx="34" fill="#061228"/>
+  <path d="M112 180a98 98 0 11196 0" fill="none" stroke="#38bdf8" stroke-width="16" stroke-linecap="round"/>
+  <path d="M210 180l58-72" stroke="#67e8f9" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="210" cy="180" r="18" fill="#7c3aed"/>
+</svg>

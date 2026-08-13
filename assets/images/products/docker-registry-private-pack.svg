@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420" role="img" aria-labelledby="title desc">
+  <title id="title">Private Docker Registry Pack product preview</title>
+  <desc id="desc">Professional software marketplace preview artwork for Private Docker Registry Pack.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#eff6ff"/>
+      <stop offset=".55" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#dbeafe"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".85" cy=".12" r=".7">
+      <stop stop-color="#0284c7" stop-opacity=".30"/>
+      <stop offset="1" stop-color="#0284c7" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="640" height="420" rx="42" fill="url(#bg)"/>
+  <rect width="640" height="420" rx="42" fill="url(#glow)"/>
+  <rect x="30" y="28" width="580" height="364" rx="34" fill="#f8fafc" fill-opacity=".80" stroke="#ffffff" stroke-width="2"/>
+  <rect x="50" y="132" width="540" height="238" rx="34" fill="#eff6ff" stroke="#cbd5e1" stroke-opacity=".72"/>
+  <rect x="438" y="44" width="112" height="36" rx="18" fill="#0284c7" fill-opacity=".12" stroke="#0284c7" stroke-opacity=".26"/>
+  <text x="462" y="68" fill="#0284c7" font-family="Arial, sans-serif" font-size="15" font-weight="900">DEVOPS</text>
+  <circle cx="568" cy="62" r="18" fill="#0284c7"/>
+  <text x="558" y="68" fill="#ffffff" font-family="Arial, sans-serif" font-size="15" font-weight="900">16</text>
+  <text x="50" y="72" fill="#0f172a" font-family="Arial, sans-serif" font-size="30" font-weight="900">Private Docker Registry Pack</text>
+
+  <text x="50" y="124" fill="#475569" font-family="Arial, sans-serif" font-size="18" font-weight="800">DevOps · $41.00/mo</text>
+  <rect x="76" y="178" width="448" height="64" rx="22" fill="#fff" stroke="#0284c7" stroke-opacity=".25"/>
+<rect x="76" y="264" width="448" height="64" rx="22" fill="#fff" stroke="#0284c7" stroke-opacity=".25"/>
+<circle cx="122" cy="210" r="13" fill="#22c55e"/>
+<circle cx="122" cy="296" r="13" fill="#22c55e"/>
+<path d="M164 210h206M164 296h246" stroke="#475569" stroke-width="11" stroke-linecap="round"/>
+<path d="M438 198l36 24-36 24M438 284l36 24-36 24" fill="none" stroke="#0284c7" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

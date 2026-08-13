@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="260" viewBox="0 0 420 260" role="img" aria-label="API documentation illustration">
+  <rect width="420" height="260" rx="34" fill="#061228"/>
+  <path d="M124 42h132l58 58v118H124z" fill="#0f172a" stroke="#38bdf8" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M256 42v58h58M156 128h108M156 160h92M156 192h126" stroke="#bae6fd" stroke-width="11" stroke-linecap="round"/>
+</svg>

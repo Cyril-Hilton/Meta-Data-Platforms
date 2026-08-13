@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420" role="img" aria-labelledby="title desc">
+  <title id="title">Google Maps API Platform product preview</title>
+  <desc id="desc">Professional software marketplace preview artwork for Google Maps API Platform.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#e0f2fe"/>
+      <stop offset=".55" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#dbeafe"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".85" cy=".12" r=".7">
+      <stop stop-color="#0ea5e9" stop-opacity=".30"/>
+      <stop offset="1" stop-color="#0ea5e9" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="640" height="420" rx="42" fill="url(#bg)"/>
+  <rect width="640" height="420" rx="42" fill="url(#glow)"/>
+  <rect x="30" y="28" width="580" height="364" rx="34" fill="#f8fafc" fill-opacity=".80" stroke="#ffffff" stroke-width="2"/>
+  <rect x="50" y="132" width="540" height="238" rx="34" fill="#eff6ff" stroke="#cbd5e1" stroke-opacity=".72"/>
+  <rect x="438" y="44" width="112" height="36" rx="18" fill="#0ea5e9" fill-opacity=".12" stroke="#0ea5e9" stroke-opacity=".26"/>
+  <text x="462" y="68" fill="#0ea5e9" font-family="Arial, sans-serif" font-size="15" font-weight="900">FEATURED</text>
+  <circle cx="568" cy="62" r="18" fill="#0ea5e9"/>
+  <text x="558" y="68" fill="#ffffff" font-family="Arial, sans-serif" font-size="15" font-weight="900">02</text>
+  <text x="50" y="72" fill="#0f172a" font-family="Arial, sans-serif" font-size="30" font-weight="900">Google Maps API Platform</text>
+
+  <text x="50" y="124" fill="#475569" font-family="Arial, sans-serif" font-size="18" font-weight="800">Maps &amp; Location · $250.00/mo</text>
+  <path d="M86 214h430M86 268h430M86 322h430M156 174v190M260 174v190M364 174v190M468 174v190" stroke="#0ea5e9" stroke-opacity=".20" stroke-width="5"/>
+<path d="M126 326c56-88 132-120 224-80 58 26 104 8 142-52" fill="none" stroke="#22c55e" stroke-width="14" stroke-linecap="round"/>
+<path d="M318 176c-32 0-58 26-58 58 0 45 58 91 58 91s58-46 58-91c0-32-26-58-58-58z" fill="#0ea5e9"/>
+<circle cx="318" cy="234" r="21" fill="#fff"/>
+</svg>

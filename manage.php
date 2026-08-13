@@ -1,0 +1,133 @@
+<?php
+
+declare(strict_types=1);
+
+require __DIR__ . '/includes/bootstrap.php';
+
+$token = mdp_safe_reference((string) ($_GET['token'] ?? $_POST['token'] ?? ''));
+$subscription = null;
+$subscriptionPath = null;
+$message = '';
+
+foreach (glob(mdp_storage_path('subscriptions', '*.json')) ?: [] as $path) {
+    $candidate = json_decode((string) file_get_contents($path), true);
+
+    if (is_array($candidate) && hash_equals((string) ($candidate['manage_token'] ?? ''), $token)) {
+        $subscription = $candidate;
+        $subscriptionPath = $path;
+        break;
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $subscription && $subscriptionPath) {
+    $action = (string) ($_POST['action'] ?? '');
+
+    if ($action === 'cancel') {
+        $subscription['status'] = 'cancelled';
+        $subscription['cancelled_at'] = gmdate('c');
+        $message = 'Subscription cancelled. No future monthly charges will be attempted.';
+    }
+
+    if ($action === 'update') {
+        $selected = array_map('strval', $_POST['items'] ?? []);
+        $submittedUsers = is_array($_POST['users'] ?? null) ? $_POST['users'] : [];
+        $lookup = mdp_product_lookup();
+        $updatedCart = [];
+
+        foreach ($subscription['items'] as $item) {
+            if (in_array($item['id'], $selected, true)) {
+                $product = $lookup[$item['id']] ?? null;
+
+                if (($product['pricing_model'] ?? 'flat') === 'users') {
+                    $updatedCart[] = [
+                        'id' => $item['id'],
+                        'quantity' => 1,
+                        'users' => (int) ($submittedUsers[$item['id']] ?? $item['users'] ?? $product['default_users'] ?? 1),
+                    ];
+                } else {
+                    $updatedCart[] = [
+                        'id' => $item['id'],
+                        'quantity' => max(1, (int) $item['quantity']),
+                    ];
+                }
+            }
+        }
+
+        $summary = mdp_cart_summary($updatedCart);
+        $subscription['items'] = $summary['items'];
+        $subscription['amount_cents'] = $summary['total_cents'];
+        $subscription['amount'] = $summary['total'];
+        $subscription['display_currency'] = $summary['display_currency'];
+        $subscription['currency'] = $summary['display_currency'];
+        $subscription['charge_amount_cents'] = $summary['charge_cents'];
+        $subscription['charge_amount'] = $summary['charge_total'];
+        $subscription['charge_currency'] = $summary['charge_currency'];
+        $subscription['status'] = $summary['total_cents'] > 0 ? 'active' : 'cancelled';
+        $subscription['updated_at'] = gmdate('c');
+        $message = $subscription['status'] === 'active'
+            ? 'Subscription updated. Future monthly charges will use the new cart.'
+            : 'All items were removed, so the subscription was cancelled.';
+    }
+
+    mdp_write_json($subscriptionPath, $subscription);
+}
+
+$currency = mdp_display_currency();
+?>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex,nofollow">
+    <title>Manage subscription | Meta Data Platforms</title>
+    <link rel="stylesheet" href="/assets/css/styles.css">
+</head>
+<body class="receipt-body">
+    <main class="receipt-card">
+        <a class="back-link" href="/">← Back to marketplace</a>
+        <p class="eyebrow">Subscription manager</p>
+        <h1>Manage monthly billing</h1>
+        <?php if ($message): ?>
+            <p class="success-message"><?= mdp_h($message) ?></p>
+        <?php endif; ?>
+        <?php if (!$subscription): ?>
+            <p>We could not find an active subscription for this secure management link.</p>
+        <?php else: ?>
+            <p class="receipt-meta">Status: <strong><?= mdp_h(ucfirst((string) $subscription['status'])) ?></strong></p>
+            <p class="receipt-meta">Customer: <strong><?= mdp_h($subscription['customer_name']) ?></strong> · <?= mdp_h($subscription['email']) ?></p>
+            <form method="post" class="manage-form">
+                <input type="hidden" name="token" value="<?= mdp_h($token) ?>">
+                <div class="receipt-lines">
+                    <?php foreach ($subscription['items'] as $item): ?>
+                        <label class="manage-line">
+                            <input type="checkbox" name="items[]" value="<?= mdp_h($item['id']) ?>" checked <?= $subscription['status'] !== 'active' ? 'disabled' : '' ?>>
+                            <span>
+                                <?= mdp_h($item['name']) ?> × <?= (int) $item['quantity'] ?>
+                                <?php if (($item['pricing_model'] ?? 'flat') === 'users'): ?>
+                                    <label class="user-calculator manage-users">
+                                        <span>Users for monthly billing</span>
+                                        <input type="number" name="users[<?= mdp_h($item['id']) ?>]" min="1" max="10000000" step="1" value="<?= (int) ($item['users'] ?? 1) ?>" <?= $subscription['status'] !== 'active' ? 'disabled' : '' ?>>
+                                    </label>
+                                <?php endif; ?>
+                            </span>
+                            <strong><?= mdp_h(mdp_money((float) $item['line_total'], $currency)) ?></strong>
+                        </label>
+                    <?php endforeach; ?>
+                </div>
+                <div class="receipt-total">
+                    <span>Current monthly total</span>
+                    <strong><?= mdp_h(mdp_money((float) $subscription['amount'], $currency)) ?></strong>
+                </div>
+                <?php if (($subscription['charge_currency'] ?? $currency) !== $currency): ?>
+                    <p class="receipt-meta">Paystack charge estimate: <strong><?= mdp_h(mdp_charge_money((float) ($subscription['charge_amount'] ?? 0))) ?></strong></p>
+                <?php endif; ?>
+                <div class="receipt-actions">
+                    <button class="button primary" type="submit" name="action" value="update" <?= $subscription['status'] !== 'active' ? 'disabled' : '' ?>>Save changes</button>
+                    <button class="button danger" type="submit" name="action" value="cancel" <?= $subscription['status'] !== 'active' ? 'disabled' : '' ?>>Cancel subscription</button>
+                </div>
+            </form>
+        <?php endif; ?>
+    </main>
+</body>
+</html>

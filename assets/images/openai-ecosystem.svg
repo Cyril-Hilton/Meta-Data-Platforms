@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="260" viewBox="0 0 420 260" role="img" aria-label="OpenAI ecosystem illustration">
+  <rect width="420" height="260" rx="34" fill="#061228"/>
+  <circle cx="210" cy="130" r="82" fill="#0f172a" stroke="#38bdf8" stroke-width="5"/>
+  <path d="M210 62c24 0 36 18 30 40 22-8 44 6 50 28 6 24-10 42-31 46 11 20 0 44-23 52-22 8-42-4-49-24-17 16-43 14-58-4-16-18-12-44 6-58-22-5-36-26-28-49 8-22 30-31 51-23 3-23 24-38 52-8z" fill="#172554" stroke="#7dd3fc" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M158 132h104M210 80v100M174 96l72 72M246 96l-72 72" stroke="#67e8f9" stroke-width="8" stroke-linecap="round"/>
+</svg>

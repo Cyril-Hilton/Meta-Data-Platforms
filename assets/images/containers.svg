@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="260" viewBox="0 0 420 260" role="img" aria-label="Container registry illustration">
+  <rect width="420" height="260" rx="34" fill="#061228"/>
+  <g fill="#0f172a" stroke="#38bdf8" stroke-width="5">
+    <rect x="70" y="58" width="96" height="64" rx="14"/>
+    <rect x="174" y="58" width="96" height="64" rx="14"/>
+    <rect x="278" y="58" width="72" height="64" rx="14"/>
+    <rect x="122" y="138" width="96" height="64" rx="14"/>
+    <rect x="226" y="138" width="96" height="64" rx="14"/>
+  </g>
+  <path d="M93 90h50M197 90h50M145 170h50M249 170h50" stroke="#7dd3fc" stroke-width="7" stroke-linecap="round"/>
+</svg>

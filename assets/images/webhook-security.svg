@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="260" viewBox="0 0 420 260" role="img" aria-label="Webhook security illustration">
+  <rect width="420" height="260" rx="34" fill="#061228"/>
+  <circle cx="140" cy="130" r="42" fill="#0f172a" stroke="#38bdf8" stroke-width="5"/>
+  <path d="M182 130h78" stroke="#67e8f9" stroke-width="11" stroke-linecap="round"/>
+  <path d="M300 66l66 28v48c0 39-26 63-66 80-40-17-66-41-66-80V94z" fill="#0f172a" stroke="#7dd3fc" stroke-width="5"/>
+  <path d="M272 135l21 21 38-48" fill="none" stroke="#34d399" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="260" viewBox="0 0 420 260" role="img" aria-label="Release notes illustration">
+  <rect width="420" height="260" rx="34" fill="#061228"/>
+  <path d="M210 36l38 78 86 12-62 61 15 86-77-41-77 41 15-86-62-61 86-12z" fill="#0f172a" stroke="#38bdf8" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M178 146h64M190 176h40" stroke="#67e8f9" stroke-width="9" stroke-linecap="round"/>
+</svg>

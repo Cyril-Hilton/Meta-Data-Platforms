@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420" role="img" aria-labelledby="title desc">
+  <title id="title">Test Automation Grid product preview</title>
+  <desc id="desc">Professional software marketplace preview artwork for Test Automation Grid.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#eff6ff"/>
+      <stop offset=".55" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#dbeafe"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".85" cy=".12" r=".7">
+      <stop stop-color="#2563eb" stop-opacity=".30"/>
+      <stop offset="1" stop-color="#2563eb" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="640" height="420" rx="42" fill="url(#bg)"/>
+  <rect width="640" height="420" rx="42" fill="url(#glow)"/>
+  <rect x="30" y="28" width="580" height="364" rx="34" fill="#f8fafc" fill-opacity=".80" stroke="#ffffff" stroke-width="2"/>
+  <rect x="50" y="132" width="540" height="238" rx="34" fill="#eff6ff" stroke="#cbd5e1" stroke-opacity=".72"/>
+  <rect x="438" y="44" width="112" height="36" rx="18" fill="#2563eb" fill-opacity=".12" stroke="#2563eb" stroke-opacity=".26"/>
+  <text x="462" y="68" fill="#2563eb" font-family="Arial, sans-serif" font-size="15" font-weight="900">QUALITY</text>
+  <circle cx="568" cy="62" r="18" fill="#2563eb"/>
+  <text x="558" y="68" fill="#ffffff" font-family="Arial, sans-serif" font-size="15" font-weight="900">55</text>
+  <text x="50" y="72" fill="#0f172a" font-family="Arial, sans-serif" font-size="30" font-weight="900">Test Automation Grid</text>
+
+  <text x="50" y="124" fill="#475569" font-family="Arial, sans-serif" font-size="18" font-weight="800">Quality · $54.00/mo</text>
+  <rect x="76" y="166" width="448" height="178" rx="34" fill="#fff" stroke="#2563eb" stroke-opacity=".24"/>
+<rect x="112" y="204" width="160" height="32" rx="16" fill="#2563eb" fill-opacity=".20"/>
+<rect x="112" y="260" width="286" height="24" rx="12" fill="#cbd5e1"/>
+<rect x="112" y="306" width="206" height="24" rx="12" fill="#dbeafe"/>
+<circle cx="438" cy="250" r="48" fill="#2563eb" fill-opacity=".18" stroke="#14b8a6" stroke-width="8"/>
+<path d="M414 250h48M438 226v48" stroke="#14b8a6" stroke-width="10" stroke-linecap="round"/>
+</svg>

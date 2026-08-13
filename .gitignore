@@ -1,0 +1,9 @@
+.env
+.env.*
+!.env.example
+/storage/receipts/*.json
+/storage/subscriptions/*.json
+/storage/pending/*.json
+/storage/logs/*.log
+.DS_Store
+Thumbs.db

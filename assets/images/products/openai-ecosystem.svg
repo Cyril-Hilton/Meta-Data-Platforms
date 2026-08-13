@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420" role="img" aria-labelledby="title desc">
+  <title id="title">OpenAI Ecosystem product preview</title>
+  <desc id="desc">Professional software marketplace preview artwork for OpenAI Ecosystem.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#faf5ff"/>
+      <stop offset=".55" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#dbeafe"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".85" cy=".12" r=".7">
+      <stop stop-color="#8b5cf6" stop-opacity=".30"/>
+      <stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="640" height="420" rx="42" fill="url(#bg)"/>
+  <rect width="640" height="420" rx="42" fill="url(#glow)"/>
+  <rect x="30" y="28" width="580" height="364" rx="34" fill="#f8fafc" fill-opacity=".80" stroke="#ffffff" stroke-width="2"/>
+  <rect x="50" y="132" width="540" height="238" rx="34" fill="#eff6ff" stroke="#cbd5e1" stroke-opacity=".72"/>
+  <rect x="438" y="44" width="112" height="36" rx="18" fill="#8b5cf6" fill-opacity=".12" stroke="#8b5cf6" stroke-opacity=".26"/>
+  <text x="462" y="68" fill="#8b5cf6" font-family="Arial, sans-serif" font-size="15" font-weight="900">FEATURED</text>
+  <circle cx="568" cy="62" r="18" fill="#8b5cf6"/>
+  <text x="558" y="68" fill="#ffffff" font-family="Arial, sans-serif" font-size="15" font-weight="900">07</text>
+  <text x="50" y="72" fill="#0f172a" font-family="Arial, sans-serif" font-size="30" font-weight="900">OpenAI Ecosystem</text>
+
+  <text x="50" y="124" fill="#475569" font-family="Arial, sans-serif" font-size="18" font-weight="800">AI Tools · $45.00/mo</text>
+  <rect x="82" y="166" width="206" height="176" rx="36" fill="#fff" stroke="#8b5cf6" stroke-opacity=".22"/>
+<circle cx="144" cy="230" r="20" fill="#8b5cf6"/>
+<circle cx="226" cy="230" r="20" fill="#22d3ee"/>
+<path d="M150 286h72" stroke="#475569" stroke-width="12" stroke-linecap="round"/>
+<path d="M350 160c28 78 62 112 140 140-78 28-112 62-140 140-28-78-62-112-140-140 78-28 112-62 140-140z" fill="#8b5cf6" fill-opacity=".18" stroke="#22d3ee" stroke-width="6"/>
+</svg>
