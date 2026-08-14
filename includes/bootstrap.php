@@ -64,9 +64,116 @@ function mdp_charge_currency(): string
     return in_array($currency, ['USD', 'GHS'], true) ? $currency : 'USD';
 }
 
+function mdp_curl_ca_bundle(): ?string
+{
+    foreach (array_filter([
+        mdp_env('CURL_CA_BUNDLE'),
+        ini_get('curl.cainfo') ?: '',
+        dirname(__DIR__) . DIRECTORY_SEPARATOR . 'certs' . DIRECTORY_SEPARATOR . 'cacert.pem',
+        'C:/Program Files/Git/usr/ssl/certs/ca-bundle.crt',
+        'C:/Program Files/Git/mingw64/ssl/certs/ca-bundle.crt',
+    ]) as $caBundle) {
+        if (is_file((string) $caBundle)) {
+            return (string) $caBundle;
+        }
+    }
+
+    return null;
+}
+
+function mdp_extract_usd_to_ghs_rate(array $payload): ?float
+{
+    $rate = null;
+
+    if (isset($payload['rates']['GHS'])) {
+        $rate = $payload['rates']['GHS'];
+    } elseif (isset($payload['conversion_rates']['GHS'])) {
+        $rate = $payload['conversion_rates']['GHS'];
+    } elseif (isset($payload['quotes']['USDGHS'])) {
+        $rate = $payload['quotes']['USDGHS'];
+    } elseif (isset($payload['rate'])) {
+        $rate = $payload['rate'];
+    }
+
+    if (!is_numeric($rate)) {
+        return null;
+    }
+
+    $rate = (float) $rate;
+
+    return $rate > 0 ? $rate : null;
+}
+
+function mdp_fetch_json(string $url, int $timeout = 8): ?array
+{
+    if ($url === '' || !str_starts_with($url, 'https://')) {
+        return null;
+    }
+
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => $timeout,
+        CURLOPT_HTTPHEADER => [
+            'Accept: application/json',
+            'User-Agent: MetaDataPlatforms/1.0',
+        ],
+    ]);
+
+    $caBundle = mdp_curl_ca_bundle();
+
+    if ($caBundle !== null) {
+        curl_setopt($ch, CURLOPT_CAINFO, $caBundle);
+    }
+
+    $raw = curl_exec($ch);
+    $status = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+    $error = curl_error($ch);
+    curl_close($ch);
+
+    if ($raw === false || $error !== '' || $status < 200 || $status >= 300) {
+        return null;
+    }
+
+    $payload = json_decode((string) $raw, true);
+
+    return is_array($payload) ? $payload : null;
+}
+
 function mdp_usd_to_ghs_rate(): float
 {
-    return max(0.01, (float) mdp_env('PAYSTACK_USD_TO_GHS_RATE', '15.50'));
+    static $rate = null;
+
+    if ($rate !== null) {
+        return $rate;
+    }
+
+    $fallbackRate = max(0.01, (float) mdp_env('PAYSTACK_USD_TO_GHS_RATE', '11.08'));
+    $cachePath = mdp_storage_path('cache', 'usd-ghs-rate.json');
+    $cached = is_file($cachePath) ? json_decode((string) file_get_contents($cachePath), true) : null;
+    $sourceUrl = mdp_env('EXCHANGE_RATE_API_URL', 'https://open.er-api.com/v6/latest/USD');
+    $payload = mdp_fetch_json($sourceUrl);
+    $apiRate = is_array($payload) ? mdp_extract_usd_to_ghs_rate($payload) : null;
+
+    if ($apiRate !== null) {
+        $rate = $apiRate;
+        mdp_write_json($cachePath, [
+            'base' => 'USD',
+            'target' => 'GHS',
+            'rate' => $rate,
+            'source' => $sourceUrl,
+            'fetched_at' => gmdate('c'),
+            'cache_policy' => 'fallback_only',
+        ]);
+
+        return $rate;
+    }
+
+    if (is_array($cached) && isset($cached['rate']) && is_numeric($cached['rate'])) {
+        return $rate = max(0.01, (float) $cached['rate']);
+    }
+
+    return $rate = $fallbackRate;
 }
 
 function mdp_display_to_charge_cents(float|int $usdAmount): int
@@ -80,9 +187,13 @@ function mdp_display_to_charge_cents(float|int $usdAmount): int
     return (int) round($amount * 100);
 }
 
-function mdp_charge_money(float|int $amount): string
+function mdp_charge_money(float|int $amount, ?string $currency = null): string
 {
-    $currency = mdp_charge_currency();
+    $currency = strtoupper($currency ?: mdp_charge_currency());
+
+    if ($currency === 'GHS') {
+        return 'GHS ' . number_format((float) $amount, 2);
+    }
 
     return ($currency === 'GHS' ? 'GH₵' : '$') . number_format((float) $amount, 2);
 }
@@ -95,10 +206,27 @@ function mdp_products(): array
         $products = require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'products.php';
 
         foreach ($products as &$product) {
+            $logoSvg = '/assets/images/product-logos/' . $product['id'] . '.svg';
+            $logoPng = '/assets/images/product-logos/' . $product['id'] . '.png';
+            $photoImage = '/assets/images/product-photos/' . $product['id'] . '.jpg';
+            $rasterImage = '/assets/images/product-renders/' . $product['id'] . '.png';
             $generatedImage = '/assets/images/products/' . $product['id'] . '.svg';
 
-            if (is_file(dirname(__DIR__) . $generatedImage)) {
+            if (is_file(dirname(__DIR__) . $logoPng)) {
+                $product['image'] = $logoPng;
+                $product['image_type'] = 'logo';
+            } elseif (is_file(dirname(__DIR__) . $logoSvg)) {
+                $product['image'] = $logoSvg;
+                $product['image_type'] = 'logo';
+            } elseif (is_file(dirname(__DIR__) . $photoImage)) {
+                $product['image'] = $photoImage;
+                $product['image_type'] = 'photo';
+            } elseif (is_file(dirname(__DIR__) . $rasterImage)) {
+                $product['image'] = $rasterImage;
+                $product['image_type'] = 'photo';
+            } elseif (is_file(dirname(__DIR__) . $generatedImage)) {
                 $product['image'] = $generatedImage;
+                $product['image_type'] = 'logo';
             }
         }
 
@@ -198,6 +326,8 @@ function mdp_cart_summary(array $cart): array
         $items[] = [
             'id' => $product['id'],
             'name' => $product['name'],
+            'image' => $product['image'],
+            'image_type' => $product['image_type'] ?? 'logo',
             'quantity' => $line['quantity'],
             'users' => $users,
             'pricing_model' => $product['pricing_model'] ?? 'flat',
@@ -286,6 +416,12 @@ function mdp_paystack_request(string $method, string $endpoint, array $payload =
         ],
     ]);
 
+    $caBundle = mdp_curl_ca_bundle();
+
+    if ($caBundle !== null) {
+        curl_setopt($ch, CURLOPT_CAINFO, $caBundle);
+    }
+
     if ($payload !== []) {
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
     }
@@ -323,17 +459,41 @@ function mdp_finish_verified_payment(string $reference, string $name, string $em
     }
 
     $reference = mdp_safe_reference($reference);
+    $pendingPath = mdp_storage_path('pending', $reference . '.json');
+    $pending = is_file($pendingPath) ? json_decode((string) file_get_contents($pendingPath), true) : null;
+
+    if (is_array($pending)) {
+        $name = (string) ($pending['customer_name'] ?? $name);
+        $email = (string) ($pending['email'] ?? $email);
+        $acceptedTerms = (bool) ($pending['monthly_terms'] ?? $acceptedTerms);
+        $cart = is_array($pending['cart'] ?? null) ? $pending['cart'] : $cart;
+    }
+
     $email = filter_var($email, FILTER_VALIDATE_EMAIL);
     $name = trim($name);
-    $summary = mdp_cart_summary($cart);
-    $displayCurrency = mdp_display_currency();
-    $chargeCurrency = mdp_charge_currency();
+    $summary = is_array($pending['summary'] ?? null) ? $pending['summary'] : mdp_cart_summary($cart);
 
-    if ($reference === '' || !$email || $name === '' || !$acceptedTerms || $summary['total_cents'] < 1 || $summary['items'] === []) {
+    if (
+        !isset($summary['total_cents'], $summary['total'], $summary['charge_cents'], $summary['charge_total'], $summary['display_currency'], $summary['charge_currency']) ||
+        !is_array($summary['items'] ?? null)
+    ) {
+        $summary = mdp_cart_summary($cart);
+    }
+
+    $summary['total_cents'] = (int) $summary['total_cents'];
+    $summary['total'] = (float) $summary['total'];
+    $summary['charge_cents'] = (int) $summary['charge_cents'];
+    $summary['charge_total'] = (float) $summary['charge_total'];
+    $summary['display_currency'] = strtoupper((string) $summary['display_currency']);
+    $summary['charge_currency'] = strtoupper((string) $summary['charge_currency']);
+    $displayCurrency = $summary['display_currency'];
+    $chargeCurrency = $summary['charge_currency'];
+
+    if ($reference === '' || !$email || $name === '' || $summary['total_cents'] < 1 || $summary['items'] === []) {
         return [
             'ok' => false,
             'status' => 422,
-            'message' => 'Missing customer, cart, payment reference, or monthly billing consent.',
+            'message' => 'Missing customer, cart, or payment reference.',
         ];
     }
 
@@ -394,9 +554,9 @@ function mdp_finish_verified_payment(string $reference, string $name, string $em
     }
 
     $authCode = (string) ($data['authorization']['authorization_code'] ?? '');
-    $manageToken = bin2hex(random_bytes(24));
+    $manageToken = $acceptedTerms ? bin2hex(random_bytes(24)) : '';
     $receiptUrl = mdp_app_url('/receipt.php?ref=' . rawurlencode($reference));
-    $manageUrl = mdp_app_url('/manage.php?token=' . rawurlencode($manageToken));
+    $manageUrl = $manageToken !== '' ? mdp_app_url('/manage.php?token=' . rawurlencode($manageToken)) : '';
     $receipt = [
         'reference' => $reference,
         'customer_name' => $name,
@@ -409,7 +569,7 @@ function mdp_finish_verified_payment(string $reference, string $name, string $em
         'charge_amount' => $summary['charge_total'],
         'charge_currency' => $chargeCurrency,
         'items' => $summary['items'],
-        'recurring_accepted' => true,
+        'recurring_accepted' => $acceptedTerms,
         'paystack_status' => $status,
         'paid_at' => gmdate('c'),
         'receipt_url' => $receiptUrl,
@@ -418,7 +578,7 @@ function mdp_finish_verified_payment(string $reference, string $name, string $em
 
     mdp_write_json($receiptPath, $receipt);
 
-    if ($authCode !== '') {
+    if ($acceptedTerms && $authCode !== '') {
         $subscription = [
             'reference' => $reference,
             'manage_token' => $manageToken,
@@ -440,8 +600,10 @@ function mdp_finish_verified_payment(string $reference, string $name, string $em
         mdp_write_json(mdp_storage_path('subscriptions', $reference . '.json'), $subscription);
     }
 
-    $chargeLine = $chargeCurrency === $displayCurrency ? '' : "\nPaystack charge: " . mdp_charge_money($summary['charge_total']);
-    $receiptText = "Thank you for subscribing to Meta Data Platforms.\n\nReference: {$reference}\nMonthly total: " . mdp_money($summary['total'], $displayCurrency) . $chargeLine . "\nReceipt: {$receiptUrl}\nManage subscription: {$manageUrl}\n";
+    $chargeLine = $chargeCurrency === $displayCurrency ? '' : "\nPaystack charge: " . mdp_charge_money($summary['charge_total'], $chargeCurrency);
+    $billingLine = $acceptedTerms ? "\nMonthly billing: enabled" : "\nMonthly billing: not enabled";
+    $manageLine = $manageUrl !== '' ? "\nManage subscription: {$manageUrl}" : '';
+    $receiptText = "Thank you for your Meta Data Platforms payment.\n\nReference: {$reference}\nTotal: " . mdp_money($summary['total'], $displayCurrency) . $chargeLine . $billingLine . "\nReceipt: {$receiptUrl}" . $manageLine . "\n";
     @mail((string) $email, 'Meta Data Platforms receipt ' . $reference, $receiptText, 'From: ' . mdp_env('RECEIPT_FROM_EMAIL', 'receipts@metadataplatforms.9yttrybe.com'));
 
     return [

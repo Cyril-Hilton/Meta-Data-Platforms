@@ -93,7 +93,7 @@ return [
         'min_users' => 1,
         'min_price' => 50.00,
         'image' => '/assets/images/messaging.svg',
-        'description' => 'Transactional alerts, automated security PINs, and notifications. Starts at 200 users, with enterprise scaling to 200,000 users.',
+        'description' => 'Transactional alerts, automated security PINs, and notifications with pricing that scales from the monthly user count entered at checkout.',
     ],
     [
         'id' => 'leaflet-mapbox-vector-tiles',

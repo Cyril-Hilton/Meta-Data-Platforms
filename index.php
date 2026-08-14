@@ -7,12 +7,13 @@ require __DIR__ . '/includes/bootstrap.php';
 $products = mdp_products();
 $displayCurrency = mdp_display_currency();
 $chargeCurrency = mdp_charge_currency();
-$usdToGhsRate = mdp_usd_to_ghs_rate();
 $publicKey = mdp_env('PAYSTACK_PUBLIC_KEY', '');
 $configured = str_starts_with($publicKey, 'pk_');
 $canonical = mdp_app_url('/');
 $productCount = count($products);
-$categoryCount = count(array_unique(array_map(static fn (array $product): string => $product['category'], $products)));
+$categories = array_values(array_unique(array_map(static fn (array $product): string => $product['category'], $products)));
+sort($categories, SORT_NATURAL | SORT_FLAG_CASE);
+$categoryCount = count($categories);
 $cssVersion = is_file(__DIR__ . '/assets/css/styles.css') ? substr(md5_file(__DIR__ . '/assets/css/styles.css'), 0, 10) : (string) time();
 $jsVersion = is_file(__DIR__ . '/assets/js/app.js') ? substr(md5_file(__DIR__ . '/assets/js/app.js'), 0, 10) : (string) time();
 $productListSchema = [
@@ -46,7 +47,7 @@ $productListSchema = [
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Meta Data Platforms | Developer Tools, APIs & Software Subscriptions</title>
-    <meta name="description" content="Buy developer tools, APIs, security, analytics, messaging, and infrastructure software subscriptions from Meta Data Platforms. Fast checkout, verified receipts, and monthly billing consent.">
+    <meta name="description" content="Buy developer tools, APIs, security, analytics, messaging, and infrastructure software from Meta Data Platforms. Fast checkout, verified receipts, and optional monthly billing.">
     <meta name="robots" content="index,follow,max-image-preview:large">
     <link rel="canonical" href="<?= mdp_h($canonical) ?>">
     <meta property="og:type" content="website">
@@ -91,7 +92,7 @@ $productListSchema = [
                     </div>
                     <div class="trust-row" aria-label="Marketplace highlights">
                         <span>Verified Paystack checkout</span>
-                        <span>Monthly billing consent</span>
+                        <span>Optional monthly billing</span>
                         <span>Instant receipts</span>
                     </div>
                 </div>
@@ -116,6 +117,9 @@ $productListSchema = [
                     <span>Category</span>
                     <select data-category>
                         <option value="all">All categories</option>
+                        <?php foreach ($categories as $category): ?>
+                            <option value="<?= mdp_h($category) ?>"><?= mdp_h($category) ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </label>
             </section>
@@ -130,8 +134,8 @@ $productListSchema = [
                 <div class="product-grid" data-product-grid>
                     <?php foreach ($products as $index => $product): ?>
                         <article class="product-card" id="<?= mdp_h($product['id']) ?>" data-product-card data-name="<?= mdp_h(strtolower($product['name'] . ' ' . $product['description'])) ?>" data-category="<?= mdp_h($product['category']) ?>">
-                            <div class="product-image">
-                                <img src="<?= mdp_h($product['image']) ?>" alt="<?= mdp_h($product['name']) ?> product preview" loading="<?= $index < 8 ? 'eager' : 'lazy' ?>" decoding="async">
+                            <div class="product-image product-image--<?= mdp_h($product['image_type'] ?? 'logo') ?>">
+                                <img src="<?= mdp_h($product['image']) ?>" alt="<?= mdp_h($product['name']) ?> product preview" loading="eager" decoding="async"<?= $index < 8 ? ' fetchpriority="high"' : '' ?>>
                             </div>
                             <div class="product-content">
                                 <span class="category"><?= mdp_h($product['category']) ?></span>
@@ -153,15 +157,68 @@ $productListSchema = [
                 </div>
             </section>
 
+            <section class="checkout-section" id="checkout" aria-labelledby="checkout-heading">
+                <div class="section-heading checkout-heading">
+                    <p class="eyebrow">Checkout</p>
+                    <h2 id="checkout-heading">Review your monthly software stack.</h2>
+                    <p>Adjust quantities, set usage-based user counts, confirm your billing details, then continue to secure Paystack payment.</p>
+                </div>
+
+                <div class="checkout-shell">
+                    <div class="checkout-card checkout-cart-card">
+                        <div class="checkout-card-head">
+                            <div>
+                                <span class="step-pill">Step 1</span>
+                                <h3>Order summary</h3>
+                            </div>
+                            <a href="#products">Add more tools</a>
+                        </div>
+                        <div class="cart-lines checkout-lines" data-cart-lines></div>
+                        <div class="cart-summary checkout-summary">
+                            <div>
+                                <span>Monthly total</span>
+                                <small data-charge-note></small>
+                            </div>
+                            <strong data-cart-total>$0.00</strong>
+                        </div>
+                    </div>
+
+                    <div class="checkout-card checkout-payment-card">
+                        <div class="checkout-card-head">
+                            <div>
+                                <span class="step-pill">Step 2</span>
+                                <h3>Customer & payment</h3>
+                            </div>
+                        </div>
+                        <form class="checkout-form checkout-form-page" data-checkout-form>
+                            <label>
+                                Full name
+                                <input name="name" autocomplete="name" required placeholder="Jane Doe">
+                            </label>
+                            <label>
+                                Email address
+                                <input name="email" type="email" autocomplete="email" required placeholder="jane@company.com">
+                            </label>
+                            <label class="terms-check">
+                                <input name="monthly_terms" type="checkbox">
+                                <span>Enable monthly auto-billing for these tools. Leave unchecked for this payment only, with no future automatic charges.</span>
+                            </label>
+                            <button class="button primary full" type="submit" data-pay-button>Proceed to Paystack checkout</button>
+                            <p class="form-note" data-payment-note><?= $configured ? 'Payments are handled securely by Paystack. Products display in dollars.' : 'Paystack keys are not configured yet. Add keys in .env to enable live checkout.' ?></p>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
             <section class="billing-panel" id="billing">
                 <div>
-                    <p class="eyebrow">Monthly billing</p>
-                    <h2>Clear recurring consent before payment.</h2>
-                    <p>Customers must tick the checkout agreement before Paystack opens. After a verified payment, the server stores only the reusable authorization reference needed for future monthly charges.</p>
+                    <p class="eyebrow">Billing choice</p>
+                    <h2>Monthly billing is optional.</h2>
+                    <p>Customers can make a one-time payment, or opt into monthly auto-billing. The server stores a reusable authorization only when monthly billing is selected and Paystack verifies the first payment.</p>
                 </div>
                 <div class="billing-steps">
                     <span>1. Add tools</span>
-                    <span>2. Agree monthly billing</span>
+                    <span>2. Choose billing</span>
                     <span>3. Pay securely</span>
                     <span>4. Receive receipt</span>
                 </div>
@@ -190,22 +247,10 @@ $productListSchema = [
                 </div>
                 <strong data-cart-total>$0.00</strong>
             </div>
-            <form class="checkout-form" id="checkout" data-checkout-form>
-                <label>
-                    Full name
-                    <input name="name" autocomplete="name" required placeholder="Jane Doe">
-                </label>
-                <label>
-                    Email address
-                    <input name="email" type="email" autocomplete="email" required placeholder="jane@company.com">
-                </label>
-                <label class="terms-check">
-                    <input name="monthly_terms" type="checkbox" required>
-                    <span>I agree that the selected tools are billed monthly and that future charges can be deducted automatically from the card I provide until I cancel or edit this subscription.</span>
-                </label>
-                <button class="button primary full" type="submit" data-pay-button>Proceed to checkout</button>
-                <p class="form-note" data-payment-note><?= $configured ? 'Payments are handled securely by Paystack. Products display in dollars.' : 'Paystack keys are not configured yet. Add keys in .env to enable live checkout.' ?></p>
-            </form>
+            <div class="cart-actions">
+                <a class="button primary full" href="#checkout" data-go-checkout>Continue to checkout</a>
+                <button class="button ghost full" type="button" data-close-cart>Keep browsing</button>
+            </div>
         </div>
     </aside>
 
@@ -218,7 +263,6 @@ $productListSchema = [
             paystackConfigured: <?= json_encode($configured) ?>,
             displayCurrency: <?= json_encode($displayCurrency) ?>,
             chargeCurrency: <?= json_encode($chargeCurrency) ?>,
-            usdToGhsRate: <?= json_encode($usdToGhsRate) ?>,
             initializeEndpoint: '/api/initialize.php',
             verifyEndpoint: '/api/verify.php'
         };

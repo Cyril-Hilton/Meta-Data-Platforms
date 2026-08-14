@@ -1,18 +1,17 @@
-const CACHE_NAME = 'meta-data-platforms-v3';
+const CACHE_NAME = 'meta-data-platforms-v10';
 const ASSETS = [
-    '/',
     '/assets/css/styles.css',
     '/assets/js/app.js',
     '/assets/images/market-og.svg',
-    '/assets/images/products/google-maps-api-platform.svg',
-    '/assets/images/products/ip-geolocation-api-pro-tier.svg',
-    '/assets/images/products/mnotify-sms-gateway-prepaid-bulk.svg',
-    '/assets/images/products/openai-ecosystem.svg',
-    '/assets/images/products/gemini-ecosystem.svg',
-    '/assets/images/products/leaflet-mapbox-vector-tiles.svg',
-    '/assets/images/products/advanced-charting-engine-commercial.svg',
-    '/assets/images/products/sentry-error-observability-suite.svg',
-    '/assets/images/products/posthog-product-analytics-cloud.svg'
+    '/assets/images/product-logos/google-maps-api-platform.svg',
+    '/assets/images/product-logos/ip-geolocation-api-pro-tier.png',
+    '/assets/images/product-logos/mnotify-sms-gateway-prepaid-bulk.png',
+    '/assets/images/product-logos/openai-ecosystem.png',
+    '/assets/images/product-logos/gemini-ecosystem.svg',
+    '/assets/images/product-logos/leaflet-mapbox-vector-tiles.svg',
+    '/assets/images/product-logos/advanced-charting-engine-commercial.svg',
+    '/assets/images/product-logos/sentry-error-observability-suite.svg',
+    '/assets/images/product-logos/posthog-product-analytics-cloud.svg'
 ];
 
 self.addEventListener('install', (event) => {
@@ -33,6 +32,11 @@ self.addEventListener('fetch', (event) => {
     const requestUrl = new URL(event.request.url);
 
     if (requestUrl.origin !== self.location.origin || requestUrl.pathname.startsWith('/api/') || event.request.method !== 'GET') {
+        return;
+    }
+
+    if (event.request.mode === 'navigate' || event.request.destination === 'document') {
+        event.respondWith(fetch(event.request));
         return;
     }
 

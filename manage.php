@@ -73,6 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $subscription && $subscriptionPath)
 }
 
 $currency = mdp_display_currency();
+$productLookup = mdp_product_lookup();
 ?>
 <!doctype html>
 <html lang="en">
@@ -100,27 +101,40 @@ $currency = mdp_display_currency();
                 <input type="hidden" name="token" value="<?= mdp_h($token) ?>">
                 <div class="receipt-lines">
                     <?php foreach ($subscription['items'] as $item): ?>
-                        <label class="manage-line">
-                            <input type="checkbox" name="items[]" value="<?= mdp_h($item['id']) ?>" checked <?= $subscription['status'] !== 'active' ? 'disabled' : '' ?>>
+                        <?php
+                            $product = $productLookup[(string) ($item['id'] ?? '')] ?? [];
+                            $image = (string) ($item['image'] ?? $product['image'] ?? '/assets/images/market-og.svg');
+                            $imageType = (string) ($item['image_type'] ?? $product['image_type'] ?? 'logo');
+                            $pricingModel = (string) ($item['pricing_model'] ?? $product['pricing_model'] ?? 'flat');
+                            $quantity = max(1, (int) ($item['quantity'] ?? 1));
+                            $baseUsers = max(1, (int) ($product['base_users'] ?? $item['users'] ?? 1));
+                            $basePrice = (float) ($product['base_price'] ?? $product['price'] ?? $item['unit_price'] ?? 0);
+                            $minPrice = (float) ($product['min_price'] ?? 0);
+                            $unitPrice = (float) ($item['unit_price'] ?? $product['price'] ?? 0);
+                        ?>
+                        <label class="manage-line" data-manage-line data-pricing-model="<?= mdp_h($pricingModel) ?>" data-quantity="<?= $quantity ?>" data-unit-price="<?= mdp_h((string) $unitPrice) ?>" data-base-users="<?= $baseUsers ?>" data-base-price="<?= mdp_h((string) $basePrice) ?>" data-min-price="<?= mdp_h((string) $minPrice) ?>">
+                            <input type="checkbox" name="items[]" value="<?= mdp_h($item['id']) ?>" checked data-manage-toggle <?= $subscription['status'] !== 'active' ? 'disabled' : '' ?>>
+                            <img class="line-logo manage-line-logo line-logo--<?= mdp_h($imageType) ?>" src="<?= mdp_h($image) ?>" alt="" loading="lazy" decoding="async">
                             <span>
                                 <?= mdp_h($item['name']) ?> × <?= (int) $item['quantity'] ?>
-                                <?php if (($item['pricing_model'] ?? 'flat') === 'users'): ?>
+                                <?php if ($pricingModel === 'users'): ?>
                                     <label class="user-calculator manage-users">
                                         <span>Users for monthly billing</span>
-                                        <input type="number" name="users[<?= mdp_h($item['id']) ?>]" min="1" max="10000000" step="1" value="<?= (int) ($item['users'] ?? 1) ?>" <?= $subscription['status'] !== 'active' ? 'disabled' : '' ?>>
+                                        <input type="number" name="users[<?= mdp_h($item['id']) ?>]" min="1" max="10000000" step="1" value="<?= (int) ($item['users'] ?? 1) ?>" data-manage-users <?= $subscription['status'] !== 'active' ? 'disabled' : '' ?>>
+                                        <small data-manage-estimate></small>
                                     </label>
                                 <?php endif; ?>
                             </span>
-                            <strong><?= mdp_h(mdp_money((float) $item['line_total'], $currency)) ?></strong>
+                            <strong data-manage-line-total><?= mdp_h(mdp_money((float) $item['line_total'], $currency)) ?></strong>
                         </label>
                     <?php endforeach; ?>
                 </div>
                 <div class="receipt-total">
                     <span>Current monthly total</span>
-                    <strong><?= mdp_h(mdp_money((float) $subscription['amount'], $currency)) ?></strong>
+                    <strong data-manage-total><?= mdp_h(mdp_money((float) $subscription['amount'], $currency)) ?></strong>
                 </div>
                 <?php if (($subscription['charge_currency'] ?? $currency) !== $currency): ?>
-                    <p class="receipt-meta">Paystack charge estimate: <strong><?= mdp_h(mdp_charge_money((float) ($subscription['charge_amount'] ?? 0))) ?></strong></p>
+                    <p class="receipt-meta">Paystack charge estimate: <strong><?= mdp_h(mdp_charge_money((float) ($subscription['charge_amount'] ?? 0), (string) ($subscription['charge_currency'] ?? $currency))) ?></strong></p>
                 <?php endif; ?>
                 <div class="receipt-actions">
                     <button class="button primary" type="submit" name="action" value="update" <?= $subscription['status'] !== 'active' ? 'disabled' : '' ?>>Save changes</button>
@@ -129,5 +143,84 @@ $currency = mdp_display_currency();
             </form>
         <?php endif; ?>
     </main>
+    <script>
+        (() => {
+            const money = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: <?= json_encode($currency) ?>,
+            });
+            const rows = Array.from(document.querySelectorAll('[data-manage-line]'));
+            const totalNode = document.querySelector('[data-manage-total]');
+
+            function numberFrom(value, fallback = 0) {
+                const parsed = Number(value);
+                return Number.isFinite(parsed) ? parsed : fallback;
+            }
+
+            function clampUsers(input) {
+                const raw = Number.parseInt(input?.value || '1', 10);
+                return Math.max(1, Math.min(10000000, Number.isFinite(raw) ? raw : 1));
+            }
+
+            function linePrice(row) {
+                const toggle = row.querySelector('[data-manage-toggle]');
+
+                if (toggle && !toggle.checked) {
+                    return 0;
+                }
+
+                if (row.dataset.pricingModel === 'users') {
+                    const usersInput = row.querySelector('[data-manage-users]');
+                    const users = clampUsers(usersInput);
+                    const baseUsers = Math.max(1, numberFrom(row.dataset.baseUsers, 1));
+                    const basePrice = numberFrom(row.dataset.basePrice, 0);
+                    const minPrice = numberFrom(row.dataset.minPrice, 0);
+
+                    return Math.round(Math.max(minPrice, basePrice * (users / baseUsers)) * 100) / 100;
+                }
+
+                return Math.round(numberFrom(row.dataset.unitPrice, 0) * numberFrom(row.dataset.quantity, 1) * 100) / 100;
+            }
+
+            function renderManageTotals() {
+                let total = 0;
+
+                rows.forEach((row) => {
+                    const price = linePrice(row);
+                    const lineTotal = row.querySelector('[data-manage-line-total]');
+                    const estimate = row.querySelector('[data-manage-estimate]');
+                    const usersInput = row.querySelector('[data-manage-users]');
+
+                    total += price;
+
+                    if (lineTotal) {
+                        lineTotal.textContent = money.format(price);
+                    }
+
+                    if (estimate && usersInput) {
+                        estimate.textContent = `${clampUsers(usersInput).toLocaleString()} users → ${money.format(price)} / month. Updates as you edit.`;
+                    }
+                });
+
+                if (totalNode) {
+                    totalNode.textContent = money.format(total);
+                }
+            }
+
+            document.addEventListener('input', (event) => {
+                if (event.target.closest('[data-manage-users]')) {
+                    renderManageTotals();
+                }
+            });
+
+            document.addEventListener('change', (event) => {
+                if (event.target.closest('[data-manage-toggle], [data-manage-users]')) {
+                    renderManageTotals();
+                }
+            });
+
+            renderManageTotals();
+        })();
+    </script>
 </body>
 </html>

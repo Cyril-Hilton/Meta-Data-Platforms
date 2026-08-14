@@ -1,0 +1,21 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Fraud Risk Scoring Engine logo">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff7ed"/>
+      <stop offset="1" stop-color="#f8fafc"/>
+    </linearGradient>
+    <linearGradient id="mark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ea580c"/>
+      <stop offset="1" stop-color="#7c3aed"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="24" stdDeviation="24" flood-color="#0f172a" flood-opacity=".18"/>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="118" fill="url(#bg)"/>
+  <circle cx="392" cy="96" r="118" fill="#ffffff" opacity=".48"/>
+  <circle cx="112" cy="426" r="132" fill="#38bdf8" opacity=".15"/>
+  <rect x="116" y="116" width="280" height="280" rx="84" fill="#ffffff" opacity=".94" filter="url(#shadow)"/>
+  <circle cx="256" cy="256" r="104" fill="url(#mark)" opacity=".12"/>
+  <text x="256" y="286" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="108" font-weight="900" fill="url(#mark)" letter-spacing="-7">FRS</text>
+</svg>

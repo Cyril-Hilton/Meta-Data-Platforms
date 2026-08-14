@@ -1,14 +1,14 @@
 :root {
-    color-scheme: dark;
-    --bg: #050816;
-    --bg-2: #07132b;
+    color-scheme: light;
+    --bg: #f8fafc;
+    --bg-2: #e0f2fe;
     --panel: rgba(8, 18, 42, 0.72);
     --panel-strong: rgba(10, 25, 58, 0.92);
     --line: rgba(125, 211, 252, 0.18);
     --line-strong: rgba(56, 189, 248, 0.34);
-    --text: #f8fbff;
-    --muted: #a9bdd8;
-    --soft: #dbeafe;
+    --text: #0f172a;
+    --muted: #475569;
+    --soft: #1e293b;
     --accent: #38bdf8;
     --accent-2: #7c3aed;
     --good: #34d399;
@@ -31,9 +31,9 @@ body {
     min-height: 100vh;
     color: var(--text);
     background:
-        radial-gradient(circle at top left, rgba(56, 189, 248, 0.24), transparent 34rem),
-        radial-gradient(circle at 80% 12%, rgba(124, 58, 237, 0.24), transparent 28rem),
-        linear-gradient(135deg, var(--bg), #020617 42%, var(--bg-2));
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.22), transparent 34rem),
+        radial-gradient(circle at 84% 10%, rgba(124, 58, 237, 0.13), transparent 30rem),
+        linear-gradient(135deg, #ffffff, #f8fafc 42%, #e0f2fe);
 }
 
 body::before {
@@ -45,7 +45,7 @@ body::before {
         linear-gradient(rgba(148, 163, 184, 0.04) 1px, transparent 1px),
         linear-gradient(90deg, rgba(148, 163, 184, 0.04) 1px, transparent 1px);
     background-size: 48px 48px;
-    mask-image: linear-gradient(to bottom, black, transparent 78%);
+    mask-image: linear-gradient(to bottom, black, transparent 86%);
 }
 
 a {
@@ -83,6 +83,17 @@ button {
     background: rgba(2, 6, 23, 0.72);
     backdrop-filter: blur(22px);
     box-shadow: 0 18px 48px rgba(0, 0, 0, 0.22);
+}
+
+.topbar,
+.topbar .brand strong,
+.topbar nav a,
+.cart-pill {
+    color: #ffffff;
+}
+
+.topbar .brand small {
+    color: rgba(224, 242, 254, 0.72);
 }
 
 .brand {
@@ -127,7 +138,7 @@ button {
     border: 1px solid transparent;
     border-radius: 999px;
     padding: 11px 15px;
-    color: var(--soft);
+    color: #e0f2fe;
     background: transparent;
 }
 
@@ -162,11 +173,12 @@ button {
     align-items: center;
     gap: 32px;
     min-height: 430px;
+    margin-bottom: 18px;
 }
 
 .eyebrow {
     margin: 0 0 12px;
-    color: var(--accent);
+    color: #0284c7;
     font-size: 0.78rem;
     font-weight: 900;
     letter-spacing: 0.18em;
@@ -185,6 +197,7 @@ button {
 .hero h1 {
     max-width: 850px;
     font-size: clamp(2.65rem, 5.7vw, 4.45rem);
+    color: #0f172a;
 }
 
 .hero-lede {
@@ -229,9 +242,9 @@ button {
 }
 
 .button.ghost {
-    border: 1px solid var(--line-strong);
-    color: white;
-    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(14, 165, 233, 0.24);
+    color: #0f172a;
+    background: rgba(255, 255, 255, 0.76);
 }
 
 .button.danger {
@@ -258,11 +271,11 @@ button {
 }
 
 .trust-row span {
-    border: 1px solid var(--line);
+    border: 1px solid rgba(14, 165, 233, 0.16);
     border-radius: 999px;
     padding: 9px 12px;
-    color: var(--soft);
-    background: rgba(255, 255, 255, 0.04);
+    color: #334155;
+    background: rgba(255, 255, 255, 0.72);
     font-size: 0.9rem;
 }
 
@@ -271,9 +284,9 @@ button {
 .toolbar,
 .product-card,
 .receipt-card {
-    border: 1px solid var(--line);
-    background: linear-gradient(145deg, rgba(8, 20, 48, 0.78), rgba(3, 7, 18, 0.74));
-    box-shadow: var(--shadow);
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow: 0 26px 80px rgba(15, 23, 42, 0.12);
     backdrop-filter: blur(22px);
 }
 
@@ -283,6 +296,7 @@ button {
     min-height: 340px;
     padding: 28px;
     border-radius: 34px;
+    color: #0f172a;
 }
 
 .hero-card::after {
@@ -291,7 +305,7 @@ button {
     inset: auto -20% -35% 12%;
     height: 230px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(56, 189, 248, 0.38), transparent 68%);
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.28), transparent 68%);
 }
 
 .pulse {
@@ -299,7 +313,7 @@ button {
     height: 92px;
     border-radius: 30px;
     background:
-        linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.42), transparent),
         linear-gradient(135deg, #0ea5e9, #7c3aed);
     box-shadow: 0 0 0 18px rgba(56, 189, 248, 0.08), 0 0 90px rgba(56, 189, 248, 0.34);
 }
@@ -311,7 +325,7 @@ button {
 }
 
 .hero-card p {
-    color: var(--muted);
+    color: #475569;
     line-height: 1.6;
 }
 
@@ -323,10 +337,10 @@ button {
 }
 
 .metric-grid span {
-    border: 1px solid var(--line);
+    border: 1px solid rgba(148, 163, 184, 0.24);
     border-radius: 20px;
     padding: 16px;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(248, 250, 252, 0.86);
 }
 
 .metric-grid strong,
@@ -340,7 +354,7 @@ button {
 }
 
 .metric-grid small {
-    color: var(--muted);
+    color: #64748b;
 }
 
 .toolbar {
@@ -441,6 +455,12 @@ button {
     gap: 18px;
 }
 
+#products,
+#checkout,
+#billing {
+    scroll-margin-top: 128px;
+}
+
 .product-card {
     display: flex;
     min-height: 430px;
@@ -462,18 +482,57 @@ button {
 
 .product-image {
     display: grid;
-    height: 205px;
+    height: 220px;
     place-items: center;
     margin: 12px;
     border-radius: 22px;
     overflow: hidden;
-    background: linear-gradient(135deg, rgba(226, 232, 240, 0.9), rgba(255, 255, 255, 0.96));
+    background:
+        radial-gradient(circle at 18% 18%, rgba(56, 189, 248, 0.18), transparent 34%),
+        radial-gradient(circle at 86% 12%, rgba(124, 58, 237, 0.13), transparent 36%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(239, 246, 255, 0.92));
+    position: relative;
 }
 
 .product-image img {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center;
+    padding: 0;
+    transform: scale(1.02);
+}
+
+.product-image--logo img {
+    width: min(50%, 150px);
+    height: min(50%, 112px);
+    max-height: 112px;
+    object-fit: contain;
+    transform: none;
+    filter: drop-shadow(0 18px 26px rgba(15, 23, 42, 0.16));
+}
+
+.product-image--logo img[src$=".png"] {
+    width: min(38%, 108px);
+    height: min(38%, 108px);
+    max-height: 108px;
+}
+
+.product-image::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(to top, rgba(2, 6, 23, 0.24), transparent 54%),
+        radial-gradient(circle at top right, rgba(56, 189, 248, 0.20), transparent 42%);
+    pointer-events: none;
+}
+
+.product-image--logo::after {
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.32), transparent 48%),
+        linear-gradient(to top, rgba(15, 23, 42, 0.05), transparent 44%);
 }
 
 .product-content {
@@ -508,17 +567,19 @@ button {
 }
 
 .product-card h3 {
-    min-height: 56px;
+    min-height: 0;
     margin: 0 0 10px;
-    font-size: 1.2rem;
+    font-size: clamp(1.05rem, 1.35vw, 1.22rem);
     letter-spacing: -0.035em;
-    line-height: 1.16;
+    line-height: 1.18;
+    overflow-wrap: anywhere;
 }
 
 .product-card p {
     margin: 0;
     color: #475569;
     line-height: 1.55;
+    overflow-wrap: anywhere;
 }
 
 .product-footer {
@@ -591,6 +652,148 @@ button {
     font-size: 0.92rem;
 }
 
+.checkout-section {
+    margin: 56px 0;
+    padding: clamp(22px, 4vw, 34px);
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    border-radius: 34px;
+    background:
+        radial-gradient(circle at 12% 10%, rgba(56, 189, 248, 0.18), transparent 32rem),
+        radial-gradient(circle at 92% 0%, rgba(124, 58, 237, 0.12), transparent 26rem),
+        rgba(255, 255, 255, 0.9);
+    box-shadow: 0 28px 85px rgba(15, 23, 42, 0.12);
+}
+
+.checkout-heading {
+    margin-bottom: 22px;
+}
+
+.checkout-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
+    gap: 20px;
+    align-items: start;
+}
+
+.checkout-card {
+    display: grid;
+    gap: 18px;
+    min-width: 0;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 28px;
+    padding: clamp(18px, 3vw, 24px);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.1);
+}
+
+.checkout-payment-card {
+    position: sticky;
+    top: 128px;
+}
+
+.checkout-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.checkout-card-head h3 {
+    margin: 8px 0 0;
+    color: #0f172a;
+    font-size: clamp(1.25rem, 2vw, 1.65rem);
+    letter-spacing: -0.045em;
+}
+
+.checkout-card-head a {
+    border: 1px solid rgba(14, 165, 233, 0.22);
+    border-radius: 999px;
+    padding: 10px 14px;
+    color: #0369a1;
+    font-size: 0.86rem;
+    font-weight: 900;
+    background: rgba(14, 165, 233, 0.08);
+}
+
+.step-pill {
+    display: inline-flex;
+    border: 1px solid rgba(14, 165, 233, 0.22);
+    border-radius: 999px;
+    padding: 7px 10px;
+    color: #0369a1;
+    background: rgba(14, 165, 233, 0.1);
+    font-size: 0.75rem;
+    font-weight: 900;
+}
+
+.checkout-lines {
+    max-height: none;
+    overflow: visible;
+    padding: 0;
+}
+
+.checkout-card .cart-line {
+    border-color: rgba(148, 163, 184, 0.28);
+    background: rgba(248, 250, 252, 0.92);
+}
+
+.checkout-card .line-logo {
+    width: 56px;
+    height: 56px;
+    background: #ffffff;
+}
+
+.checkout-card .cart-line h3 {
+    color: #0f172a;
+}
+
+.checkout-card .cart-line p,
+.checkout-card .user-calculator span,
+.checkout-card .user-calculator small {
+    color: #64748b;
+}
+
+.checkout-card .quantity-controls button {
+    color: #0f172a;
+    background: rgba(14, 165, 233, 0.08);
+}
+
+.checkout-card .remove-line {
+    color: #be123c;
+    background: rgba(251, 113, 133, 0.12);
+}
+
+.checkout-card .user-calculator input {
+    color: #0f172a;
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(148, 163, 184, 0.42);
+}
+
+.checkout-summary {
+    border: 1px solid rgba(14, 165, 233, 0.18);
+    border-radius: 22px;
+    background: linear-gradient(135deg, rgba(240, 249, 255, 0.94), rgba(245, 243, 255, 0.94));
+}
+
+.checkout-summary small {
+    color: #0369a1;
+}
+
+.checkout-summary strong {
+    color: #0f172a;
+}
+
+.checkout-form-page {
+    padding: 0;
+}
+
+.checkout-form-page .terms-check {
+    border: 1px solid rgba(148, 163, 184, 0.26);
+    border-radius: 18px;
+    padding: 14px;
+    background: rgba(248, 250, 252, 0.86);
+}
+
 .cart-drawer {
     position: fixed;
     inset: 0;
@@ -614,6 +817,7 @@ button {
     overflow: hidden;
     border: 1px solid var(--line-strong);
     border-radius: 30px;
+    color: #f8fafc;
     background: rgba(4, 12, 28, 0.96);
     box-shadow: var(--shadow);
 }
@@ -662,23 +866,68 @@ button {
 
 .cart-line {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 10px;
+    align-items: start;
     border: 1px solid var(--line);
     border-radius: 18px;
     padding: 14px;
     background: rgba(255, 255, 255, 0.04);
 }
 
+.line-logo {
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    border-radius: 16px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+}
+
+.cart-line-body {
+    min-width: 0;
+}
+
+.cart-line-actions {
+    display: flex;
+    justify-content: flex-end;
+    min-width: max-content;
+}
+
+.cart-panel .cart-line {
+    border-color: rgba(125, 211, 252, 0.15);
+    background: rgba(15, 23, 42, 0.74);
+}
+
+.cart-panel .line-logo {
+    border-color: rgba(125, 211, 252, 0.2);
+    background: rgba(248, 250, 252, 0.96);
+}
+
 .cart-line h3 {
     margin: 0 0 6px;
     font-size: 0.98rem;
+    color: inherit;
 }
 
 .cart-line p {
     margin: 0;
     color: var(--muted);
     font-size: 0.88rem;
+}
+
+.cart-panel .cart-line p,
+.cart-panel .user-calculator span,
+.cart-panel .user-calculator small,
+.cart-panel .cart-summary span {
+    color: #cbd5e1;
+}
+
+.cart-panel .user-calculator input {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.09);
 }
 
 .quantity-controls {
@@ -762,6 +1011,16 @@ button {
     font-size: 1.45rem;
 }
 
+.cart-panel .cart-summary strong {
+    color: #ffffff;
+}
+
+.cart-actions {
+    display: grid;
+    gap: 10px;
+    padding: 20px 22px 22px;
+}
+
 .checkout-form {
     display: grid;
     gap: 14px;
@@ -789,6 +1048,36 @@ button {
     color: var(--muted);
     font-size: 0.86rem;
     line-height: 1.45;
+}
+
+.empty-cart {
+    display: grid;
+    gap: 8px;
+}
+
+.empty-cart strong {
+    color: inherit;
+}
+
+.empty-cart span {
+    display: block;
+}
+
+.empty-cart a {
+    justify-self: center;
+    margin-top: 4px;
+    border: 1px solid rgba(14, 165, 233, 0.24);
+    border-radius: 999px;
+    padding: 9px 13px;
+    color: #0369a1;
+    background: rgba(14, 165, 233, 0.08);
+    font-weight: 900;
+}
+
+.cart-panel .empty-cart a {
+    color: #e0f2fe;
+    border-color: rgba(125, 211, 252, 0.28);
+    background: rgba(14, 165, 233, 0.12);
 }
 
 .toast {
@@ -838,8 +1127,37 @@ button {
     font-weight: 900;
 }
 
+.receipt-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.28);
+    padding-bottom: 18px;
+}
+
+.receipt-brand strong,
+.receipt-brand small {
+    display: block;
+}
+
+.receipt-brand strong {
+    color: #0f172a;
+    font-size: clamp(1.2rem, 3vw, 1.55rem);
+    font-weight: 950;
+    letter-spacing: -0.045em;
+}
+
+.receipt-brand small {
+    margin-top: 2px;
+    color: #64748b;
+    font-size: 0.86rem;
+    font-weight: 800;
+}
+
 .receipt-meta {
     color: var(--muted);
+    overflow-wrap: anywhere;
 }
 
 .receipt-lines {
@@ -851,7 +1169,7 @@ button {
 .receipt-lines > div,
 .manage-line {
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 12px;
     align-items: center;
     border: 1px solid var(--line);
@@ -860,12 +1178,27 @@ button {
     background: rgba(255, 255, 255, 0.04);
 }
 
-.receipt-lines > div {
-    grid-template-columns: 1fr auto;
+.manage-line {
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+}
+
+.receipt-line-logo,
+.manage-line-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 15px;
+}
+
+.receipt-product-name,
+.manage-line > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-weight: 800;
 }
 
 .receipt-total {
     display: flex;
+    align-items: flex-start;
     justify-content: space-between;
     gap: 16px;
     border-top: 1px solid var(--line);
@@ -898,8 +1231,13 @@ button {
 
 @media (max-width: 980px) {
     .hero,
-    .billing-panel {
+    .billing-panel,
+    .checkout-shell {
         grid-template-columns: 1fr;
+    }
+
+    .checkout-payment-card {
+        position: static;
     }
 
     .product-grid {
@@ -914,12 +1252,27 @@ button {
 
     .topbar {
         top: 8px;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px 10px;
+        padding: 10px;
         border-radius: 26px;
     }
 
     .brand {
-        flex: 1 1 calc(100% - 104px);
+        min-width: 0;
+    }
+
+    .brand strong {
+        font-size: 0.95rem;
+    }
+
+    .brand-mark {
+        width: 38px;
+        height: 38px;
+        flex-basis: 38px;
+        border-radius: 14px;
     }
 
     .brand small {
@@ -927,16 +1280,28 @@ button {
     }
 
     .topbar nav {
-        order: 3;
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
         width: 100%;
-        overflow-x: auto;
-        padding-top: 4px;
+        overflow: visible;
+        padding-top: 0;
     }
 
     .topbar nav a {
-        flex: 1;
-        text-align: center;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 36px;
+        padding: 8px 6px;
+        font-size: 0.84rem;
         white-space: nowrap;
+    }
+
+    .cart-pill {
+        min-height: 40px;
+        padding: 8px 10px;
     }
 
     .hero {
@@ -958,6 +1323,22 @@ button {
 
     .toolbar {
         grid-template-columns: 1fr;
+    }
+
+    .checkout-section {
+        margin: 36px 0;
+        padding: 16px;
+        border-radius: 28px;
+    }
+
+    .checkout-card {
+        padding: 16px;
+        border-radius: 22px;
+    }
+
+    .checkout-card-head {
+        align-items: flex-start;
+        flex-direction: column;
     }
 
     .product-grid {
@@ -987,7 +1368,33 @@ button {
     }
 
     .cart-line {
-        grid-template-columns: 1fr;
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .cart-line-actions {
+        grid-column: 2;
+        justify-content: flex-start;
+    }
+
+    .receipt-lines > div {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .receipt-lines > div strong {
+        grid-column: 2;
+    }
+
+    .receipt-total {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .manage-line {
+        grid-template-columns: auto auto minmax(0, 1fr);
+    }
+
+    .manage-line > strong {
+        grid-column: 3;
     }
 
     .quantity-controls,
@@ -1008,6 +1415,189 @@ button {
     .cart-panel {
         max-height: calc(100vh - 16px);
         border-radius: 24px;
+    }
+}
+
+@media (max-width: 520px) {
+    .receipt-body {
+        display: block;
+        min-height: 100vh;
+        padding: 10px;
+    }
+
+    .receipt-card {
+        width: 100%;
+        border-radius: 22px;
+        padding: 16px;
+    }
+
+    .receipt-card h1 {
+        font-size: clamp(2rem, 12vw, 2.65rem);
+        line-height: 1;
+        letter-spacing: -0.055em;
+    }
+
+    .receipt-brand {
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 20px;
+        padding-bottom: 14px;
+    }
+
+    .receipt-brand .brand-mark {
+        width: 40px;
+        height: 40px;
+        flex-basis: 40px;
+        border-radius: 14px;
+        font-size: 0.76rem;
+    }
+
+    .receipt-brand strong {
+        font-size: 1.12rem;
+        line-height: 1.05;
+    }
+
+    .receipt-brand small {
+        font-size: 0.78rem;
+    }
+
+    .back-link {
+        margin-bottom: 16px;
+        font-size: 0.9rem;
+    }
+
+    .receipt-meta {
+        margin: 9px 0;
+        font-size: 0.92rem;
+        line-height: 1.45;
+    }
+
+    .receipt-lines {
+        gap: 8px;
+        margin: 18px 0;
+    }
+
+    .receipt-lines > div {
+        grid-template-columns: 42px minmax(0, 1fr);
+        gap: 10px;
+        align-items: start;
+        padding: 12px;
+        border-radius: 14px;
+    }
+
+    .receipt-line-logo {
+        width: 42px;
+        height: 42px;
+        border-radius: 13px;
+        padding: 7px;
+    }
+
+    .receipt-product-name {
+        font-size: 0.93rem;
+        line-height: 1.35;
+    }
+
+    .receipt-lines > div strong {
+        grid-column: 2;
+        justify-self: start;
+        font-size: 1rem;
+    }
+
+    .receipt-total {
+        margin-top: 6px;
+    }
+
+    .receipt-total strong {
+        font-size: 1.35rem;
+    }
+
+    .receipt-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .receipt-actions .button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 380px) {
+    .brand strong {
+        font-size: 0.9rem;
+    }
+
+    .topbar nav a {
+        font-size: 0.78rem;
+        letter-spacing: -0.01em;
+    }
+}
+
+@media print {
+    :root {
+        color-scheme: light;
+    }
+
+    * {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    body,
+    .receipt-body {
+        display: block;
+        min-height: auto;
+        padding: 0;
+        color: #0f172a;
+        background: #ffffff !important;
+    }
+
+    body::before,
+    .back-link,
+    .receipt-actions {
+        display: none !important;
+    }
+
+    .receipt-card {
+        width: 100%;
+        max-width: none;
+        border: 0;
+        border-radius: 0;
+        padding: 0;
+        background: #ffffff !important;
+        box-shadow: none;
+        backdrop-filter: none;
+    }
+
+    .receipt-brand {
+        margin-bottom: 22px;
+        border-bottom: 2px solid #0f172a;
+        padding-bottom: 14px;
+    }
+
+    .receipt-brand .brand-mark {
+        box-shadow: none;
+    }
+
+    .receipt-card h1 {
+        font-size: 34px;
+        line-height: 1.08;
+    }
+
+    .receipt-meta,
+    .receipt-total span {
+        color: #334155;
+    }
+
+    .receipt-lines > div,
+    .manage-line {
+        break-inside: avoid;
+        border-color: #cbd5e1;
+        background: #ffffff !important;
+    }
+
+    .line-logo {
+        border-color: #cbd5e1;
+        box-shadow: none;
     }
 }
 

@@ -2,17 +2,17 @@
     const products = Array.isArray(window.MDP_PRODUCTS) ? window.MDP_PRODUCTS : [];
     const config = window.MDP_CONFIG || {};
     const productMap = new Map(products.map((product) => [product.id, product]));
-    const cartKey = 'mdp_cart_v1';
+    const cartKey = 'mdp_cart_v2';
+    try {
+        localStorage.removeItem('mdp_cart_v1');
+    } catch {
+        // Storage can be unavailable in strict privacy modes.
+    }
     let cart = loadCart();
 
     const displayMoney = new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: config.displayCurrency || 'USD',
-    });
-
-    const chargeMoney = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: config.chargeCurrency || config.displayCurrency || 'USD',
     });
 
     const $ = (selector, root = document) => root.querySelector(selector);
@@ -89,19 +89,56 @@
         return cart.reduce((total, item) => total + lineTotalCents(item), 0);
     }
 
-    function chargeTotalCents() {
-        const usdTotal = cartTotalCents() / 100;
-        const chargeCurrency = config.chargeCurrency || config.displayCurrency || 'USD';
-
-        if (chargeCurrency === 'GHS') {
-            return Math.round(usdTotal * Number(config.usdToGhsRate || 1) * 100);
-        }
-
-        return Math.round(usdTotal * 100);
-    }
-
     function cartCount() {
         return cart.reduce((total, item) => total + Number(item.quantity || 1), 0);
+    }
+
+    function usageEstimateText(product, users) {
+        const safeUsers = clampUsers(product, users);
+        const price = productUnitPrice(product, safeUsers);
+
+        return `${safeUsers.toLocaleString()} users → ${displayMoney.format(price)} / month. Updates as you edit.`;
+    }
+
+    function activeUserInputState() {
+        const active = document.activeElement;
+
+        if (!active || !active.matches?.('[data-users-input]')) {
+            return null;
+        }
+
+        const lineContainers = $$('[data-cart-lines]');
+
+        return {
+            id: active.dataset.usersInput,
+            listIndex: lineContainers.findIndex((node) => node.contains(active)),
+        };
+    }
+
+    function restoreUserInputFocus(state) {
+        if (!state?.id) {
+            return;
+        }
+
+        const lineContainers = $$('[data-cart-lines]');
+        const scopedInputs = state.listIndex >= 0 && lineContainers[state.listIndex]
+            ? $$('[data-users-input]', lineContainers[state.listIndex])
+            : [];
+        const fallbackInputs = $$('[data-users-input]');
+        const input = [...scopedInputs, ...fallbackInputs].find((node) => node.dataset.usersInput === state.id);
+
+        if (!input) {
+            return;
+        }
+
+        input.focus({ preventScroll: true });
+
+        try {
+            const end = input.value.length;
+            input.setSelectionRange(end, end);
+        } catch {
+            // Number inputs do not always support selection ranges.
+        }
     }
 
     function toast(message) {
@@ -170,41 +207,62 @@
     }
 
     function renderCart() {
+        const focusState = activeUserInputState();
+
         $$('[data-cart-count]').forEach((node) => {
             node.textContent = String(cartCount());
         });
 
-        const total = cartTotalCents() / 100;
-        const totalNode = $('[data-cart-total]');
-        if (totalNode) totalNode.textContent = displayMoney.format(total);
+        $$('[data-pay-button]').forEach((button) => {
+            const defaultText = button.dataset.defaultText || button.textContent || 'Proceed to checkout';
+            button.dataset.defaultText = defaultText;
 
-        const chargeNote = $('[data-charge-note]');
-        if (chargeNote) {
-            const chargeCurrency = config.chargeCurrency || config.displayCurrency || 'USD';
-            if (chargeCurrency === 'GHS') {
-                chargeNote.textContent = `Paystack fallback charge: ${chargeMoney.format(chargeTotalCents() / 100)} at $1 = GHS ${Number(config.usdToGhsRate || 1).toFixed(2)}`;
-            } else {
-                chargeNote.textContent = 'Paystack will charge the same dollar total.';
+            if (button.dataset.loading === 'true') {
+                return;
             }
-        }
 
-        const linesNode = $('[data-cart-lines]');
-        if (!linesNode) return;
+            button.disabled = cart.length === 0;
+            button.textContent = cart.length === 0 ? 'Add products to checkout' : defaultText;
+        });
+
+        const total = cartTotalCents() / 100;
+        $$('[data-cart-total]').forEach((node) => {
+            node.textContent = displayMoney.format(total);
+        });
+
+        $$('[data-charge-note]').forEach((chargeNote) => {
+            chargeNote.textContent = 'Secure checkout is handled by Paystack.';
+        });
+
+        const lineNodes = $$('[data-cart-lines]');
+        if (lineNodes.length === 0) return;
 
         if (cart.length === 0) {
-            linesNode.innerHTML = '<div class="empty-cart">Your cart is empty. Add a few tools to build a monthly stack.</div>';
+            const emptyHtml = `
+                <div class="empty-cart">
+                    <strong>Your cart is empty.</strong>
+                    <span>Add a few tools to build a monthly stack.</span>
+                    <a href="#products">Browse products</a>
+                </div>
+            `;
+            lineNodes.forEach((linesNode) => {
+                linesNode.innerHTML = emptyHtml;
+            });
             return;
         }
 
-        linesNode.innerHTML = cart.map((item) => {
+        const linesHtml = cart.map((item) => {
             const product = productMap.get(item.id);
             const usagePriced = isUsagePriced(product);
             const lineTotal = lineTotalCents(item) / 100;
+            const productImage = product.image || '/assets/images/market-og.svg';
+            const productImageType = product.image_type || 'logo';
+            const currentUsers = usagePriced ? clampUsers(product, item.users) : null;
             const usageControls = usagePriced ? `
                 <label class="user-calculator">
                     <span>Number of users</span>
-                    <input type="number" min="${Number(product.min_users || 1)}" max="10000000" step="1" value="${clampUsers(product, item.users)}" data-users-input="${product.id}">
-                    <small>${displayMoney.format(productUnitPrice(product, product.base_users))} at ${Number(product.base_users || 1).toLocaleString()} users. Minimum monthly pack: ${displayMoney.format(Number(product.min_price || product.price || 0))}.</small>
+                    <input type="number" min="${Number(product.min_users || 1)}" max="10000000" step="1" value="${currentUsers}" data-users-input="${product.id}">
+                    <small class="usage-live-note">${usageEstimateText(product, currentUsers)}</small>
                 </label>
             ` : '';
             const controls = usagePriced ? `
@@ -219,15 +277,22 @@
 
             return `
                 <div class="cart-line">
-                    <div>
+                    <img class="line-logo cart-line-logo line-logo--${escapeHtml(productImageType)}" src="${escapeHtml(productImage)}" alt="" loading="lazy" decoding="async">
+                    <div class="cart-line-body">
                         <h3>${escapeHtml(product.name)}</h3>
                         <p>${displayMoney.format(lineTotal)} / month${usagePriced ? ' based on users' : ''}</p>
                         ${usageControls}
                     </div>
-                    ${controls}
+                    <div class="cart-line-actions">${controls}</div>
                 </div>
             `;
         }).join('');
+
+        lineNodes.forEach((linesNode) => {
+            linesNode.innerHTML = linesHtml;
+        });
+
+        restoreUserInputFocus(focusState);
     }
 
     function escapeHtml(value) {
@@ -255,13 +320,25 @@
         document.body.style.overflow = '';
     }
 
+    function scrollToCurrentHash() {
+        const id = window.location.hash ? window.location.hash.slice(1) : '';
+        if (!id) return;
+
+        const target = document.getElementById(id);
+        if (!target) return;
+
+        target.scrollIntoView({ block: 'start', behavior: 'auto' });
+    }
+
     function setupFilters() {
         const select = $('[data-category]');
         const search = $('[data-search]');
         const categories = [...new Set(products.map((product) => product.category))].sort();
 
         if (select) {
+            const existingOptions = new Set([...select.options].map((option) => option.value));
             categories.forEach((category) => {
+                if (existingOptions.has(category)) return;
                 const option = document.createElement('option');
                 option.value = category;
                 option.textContent = category;
@@ -299,7 +376,13 @@
         const result = await response.json().catch(() => ({}));
 
         if (!response.ok) {
-            throw new Error(result.message || 'Unable to initialize payment.');
+            const message = result.message || 'Unable to initialize payment.';
+
+            if (message.includes('Paystack secret key is not configured')) {
+                throw new Error('Paystack test keys are not configured on this local server. Add test keys to .env before testing payment.');
+            }
+
+            throw new Error(message);
         }
 
         return result;
@@ -318,21 +401,25 @@
             return;
         }
 
-        if (formData.get('monthly_terms') !== 'on') {
-            toast('Please agree to monthly billing before checkout.');
-            return;
+        const defaultButtonText = button?.dataset.defaultText || button?.textContent || 'Proceed to checkout';
+        if (button) {
+            button.dataset.defaultText = defaultButtonText;
+            button.dataset.loading = 'true';
+            button.disabled = true;
+            button.textContent = 'Preparing secure checkout...';
         }
-
-        button.disabled = true;
-        button.textContent = 'Preparing secure checkout...';
 
         try {
             const initialized = await initializePayment(formData);
-            button.textContent = 'Redirecting to Paystack...';
+            if (button) button.textContent = 'Redirecting to Paystack...';
             window.location.href = initialized.authorization_url;
         } catch (error) {
-            button.disabled = false;
-            button.textContent = 'Proceed to checkout';
+            if (button) {
+                delete button.dataset.loading;
+                button.disabled = false;
+                button.textContent = defaultButtonText;
+            }
+            renderCart();
             toast(error.message || 'Unable to start checkout.');
         }
     }
@@ -355,6 +442,11 @@
             return;
         }
 
+        if (event.target.closest('[data-go-checkout]')) {
+            closeCart();
+            return;
+        }
+
         if (event.target.closest('[data-close-cart]')) {
             closeCart();
             return;
@@ -366,18 +458,23 @@
         }
     });
 
-    document.addEventListener('input', (event) => {
+    function handleUserInputChange(event) {
         const userInput = event.target.closest('[data-users-input]');
         if (userInput) {
             updateUsers(userInput.dataset.usersInput, userInput.value);
         }
-    });
+    }
+
+    document.addEventListener('input', handleUserInputChange);
+    document.addEventListener('change', handleUserInputChange);
 
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') closeCart();
     });
 
-    $('[data-checkout-form]')?.addEventListener('submit', handleCheckout);
+    $$('[data-checkout-form]').forEach((form) => {
+        form.addEventListener('submit', handleCheckout);
+    });
 
     setupFilters();
     renderCart();
@@ -387,4 +484,9 @@
             navigator.serviceWorker.register('/service-worker.js').catch(() => {});
         });
     }
+
+    window.addEventListener('load', () => {
+        setTimeout(scrollToCurrentHash, 120);
+        setTimeout(scrollToCurrentHash, 450);
+    });
 })();

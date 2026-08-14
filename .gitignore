@@ -4,6 +4,9 @@
 /storage/receipts/*.json
 /storage/subscriptions/*.json
 /storage/pending/*.json
+/storage/cache/*.json
 /storage/logs/*.log
 .DS_Store
 Thumbs.db
+assets/images/product-renders/
+assets/images/product-photos/

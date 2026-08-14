@@ -28,8 +28,21 @@ foreach (glob(mdp_storage_path('subscriptions', '*.json')) ?: [] as $path) {
     }
 
     $processed++;
-    $chargeAmountCents = (int) ($subscription['charge_amount_cents'] ?? mdp_display_to_charge_cents((float) ($subscription['amount'] ?? 0)));
-    $chargeCurrency = (string) ($subscription['charge_currency'] ?? mdp_charge_currency());
+    $displayAmount = (float) ($subscription['amount'] ?? 0);
+    $displayCurrency = strtoupper((string) ($subscription['display_currency'] ?? $subscription['currency'] ?? mdp_display_currency()));
+    $chargeCurrency = strtoupper((string) ($subscription['charge_currency'] ?? mdp_charge_currency()));
+    $liveExchangeRate = null;
+
+    if ($chargeCurrency === 'GHS' && $displayCurrency === 'USD') {
+        $liveExchangeRate = mdp_usd_to_ghs_rate();
+        $chargeAmountCents = (int) round($displayAmount * $liveExchangeRate * 100);
+        $subscription['charge_amount_cents'] = $chargeAmountCents;
+        $subscription['charge_amount'] = $chargeAmountCents / 100;
+        $subscription['exchange_rate_usd_to_ghs'] = $liveExchangeRate;
+        $subscription['exchange_rate_updated_at'] = gmdate('c');
+    } else {
+        $chargeAmountCents = (int) ($subscription['charge_amount_cents'] ?? mdp_display_to_charge_cents($displayAmount));
+    }
 
     $response = mdp_paystack_request('POST', 'transaction/charge_authorization', [
         'authorization_code' => (string) $subscription['authorization_code'],
@@ -40,6 +53,11 @@ foreach (glob(mdp_storage_path('subscriptions', '*.json')) ?: [] as $path) {
         'metadata' => [
             'subscription_reference' => (string) $subscription['reference'],
             'product_count' => count($subscription['items'] ?? []),
+            'display_currency' => $displayCurrency,
+            'display_amount' => $displayAmount,
+            'charge_currency' => $chargeCurrency,
+            'charge_amount' => $chargeAmountCents / 100,
+            'exchange_rate_usd_to_ghs' => $liveExchangeRate,
         ],
     ]);
 
@@ -54,11 +72,12 @@ foreach (glob(mdp_storage_path('subscriptions', '*.json')) ?: [] as $path) {
             'email' => (string) $subscription['email'],
             'amount_cents' => (int) $subscription['amount_cents'],
             'amount' => (float) $subscription['amount'],
-            'currency' => (string) ($subscription['display_currency'] ?? $subscription['currency'] ?? mdp_display_currency()),
-            'display_currency' => (string) ($subscription['display_currency'] ?? $subscription['currency'] ?? mdp_display_currency()),
+            'currency' => $displayCurrency,
+            'display_currency' => $displayCurrency,
             'charge_amount_cents' => $chargeAmountCents,
             'charge_amount' => $chargeAmountCents / 100,
             'charge_currency' => $chargeCurrency,
+            'exchange_rate_usd_to_ghs' => $liveExchangeRate,
             'items' => $subscription['items'],
             'recurring_accepted' => true,
             'paystack_status' => strtolower((string) ($data['status'] ?? 'success')),
