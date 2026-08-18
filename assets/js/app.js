@@ -30,9 +30,30 @@
         return Math.max(minUsers, Math.min(10000000, Number.isFinite(value) ? value : defaultUsers));
     }
 
-    function productUnitPrice(product, users) {
+    function clampPrice(product, price) {
+        const minPrice = Number(product.min_price || 1);
+        const defaultPrice = Number(product.price || 1);
+        const parsed = Number.parseFloat(price);
+        const value = Number.isFinite(parsed) ? parsed : defaultPrice;
+
+        return Math.max(minPrice, Math.min(100000, Math.round(value * 100) / 100));
+    }
+
+    function priceToEstimatedUsers(product, price) {
+        const baseUsers = Math.max(1, Number(product.base_users || 1));
+        const basePrice = Math.max(0.01, Number(product.base_price || product.price || 1));
+        const safePrice = clampPrice(product, price);
+
+        return Math.max(1, Math.round((safePrice / basePrice) * baseUsers));
+    }
+
+    function productUnitPrice(product, users, customPrice) {
         if (!isUsagePriced(product)) {
             return Number(product.price || 0);
+        }
+
+        if (customPrice !== undefined && customPrice !== null && Number.isFinite(Number(customPrice))) {
+            return clampPrice(product, customPrice);
         }
 
         const baseUsers = Math.max(1, Number(product.base_users || 1));
@@ -54,10 +75,14 @@
             const quantity = Math.max(1, Math.min(99, Number(item.quantity || 1)));
 
             if (isUsagePriced(product)) {
+                const price = item.price !== undefined && item.price !== null ? clampPrice(product, item.price) : productUnitPrice(product, item.users);
+                const users = item.users !== undefined && item.users !== null ? clampUsers(product, item.users) : priceToEstimatedUsers(product, price);
+
                 normalized.push({
                     id: product.id,
                     quantity,
-                    users: clampUsers(product, item.users),
+                    price,
+                    users,
                 });
                 return;
             }
@@ -83,7 +108,8 @@
 
     function lineTotalCents(item) {
         const product = productMap.get(item.id);
-        return Math.round(productUnitPrice(product, item.users) * 100) * Number(item.quantity || 1);
+        const unitPrice = item.price !== undefined && item.price !== null ? clampPrice(product, item.price) : productUnitPrice(product, item.users);
+        return Math.round(unitPrice * 100) * Number(item.quantity || 1);
     }
 
     function cartTotalCents() {
@@ -94,24 +120,24 @@
         return cart.reduce((total, item) => total + Number(item.quantity || 1), 0);
     }
 
-    function usageEstimateText(product, users) {
-        const safeUsers = clampUsers(product, users);
-        const price = productUnitPrice(product, safeUsers);
+    function usageEstimateText(product, price, users) {
+        const safePrice = price !== undefined && price !== null ? clampPrice(product, price) : productUnitPrice(product, users);
+        const estUsers = priceToEstimatedUsers(product, safePrice);
 
-        return `${safeUsers.toLocaleString()} users → ${displayMoney.format(price)} / month. Updates as you edit.`;
+        return `${displayMoney.format(safePrice)} / month → ~${estUsers.toLocaleString()} users included. Updates as you edit.`;
     }
 
     function activeUserInputState() {
         const active = document.activeElement;
 
-        if (!active || !active.matches?.('[data-users-input]')) {
+        if (!active || (!active.matches?.('[data-users-input]') && !active.matches?.('[data-price-input]'))) {
             return null;
         }
 
         const lineContainers = $$('[data-cart-lines]');
 
         return {
-            id: active.dataset.usersInput,
+            id: active.dataset.priceInput || active.dataset.usersInput,
             lineIndex: active.dataset.lineIndex,
             listIndex: lineContainers.findIndex((node) => node.contains(active)),
         };
@@ -124,13 +150,13 @@
 
         const lineContainers = $$('[data-cart-lines]');
         const scopedInputs = state.listIndex >= 0 && lineContainers[state.listIndex]
-            ? $$('[data-users-input]', lineContainers[state.listIndex])
+            ? $$('[data-price-input], [data-users-input]', lineContainers[state.listIndex])
             : [];
-        const fallbackInputs = $$('[data-users-input]');
+        const fallbackInputs = $$('[data-price-input], [data-users-input]');
         const allInputs = [...scopedInputs, ...fallbackInputs];
         const input = (state.lineIndex !== undefined
             ? allInputs.find((node) => node.dataset.lineIndex === String(state.lineIndex))
-            : null) || allInputs.find((node) => node.dataset.usersInput === state.id);
+            : null) || allInputs.find((node) => (node.dataset.priceInput || node.dataset.usersInput) === state.id);
 
         if (!input) {
             return;
@@ -161,13 +187,14 @@
         if (!product) return;
 
         if (isUsagePriced(product)) {
+            const defaultPrice = clampPrice(product, product.price);
             const defaultUsers = clampUsers(product, product.default_users);
-            const found = cart.find((item) => item.id === id && item.users === defaultUsers);
+            const found = cart.find((item) => item.id === id && item.price === defaultPrice);
 
             if (found) {
                 found.quantity += 1;
             } else {
-                cart.push({ id, quantity: 1, users: defaultUsers });
+                cart.push({ id, quantity: 1, price: defaultPrice, users: defaultUsers });
             }
         } else {
             const found = cart.find((item) => item.id === id);
@@ -216,13 +243,12 @@
         const product = productMap.get(item.id);
         if (!product) return;
 
-        const safeUsers = clampUsers(product, item.users);
-        const lineTotal = lineTotalCents(item) / 100;
-        const unitPrice = productUnitPrice(product, safeUsers);
+        const unitPrice = item.price !== undefined && item.price !== null ? clampPrice(product, item.price) : productUnitPrice(product, item.users);
+        const lineTotal = unitPrice * Number(item.quantity || 1);
         const priceNote = item.quantity > 1
             ? `${displayMoney.format(unitPrice)} / month × ${item.quantity} = <strong>${displayMoney.format(lineTotal)}</strong>`
-            : `${displayMoney.format(lineTotal)} / month${isUsagePriced(product) ? ' based on users' : ''}`;
-        const estimateText = usageEstimateText(product, safeUsers);
+            : `${displayMoney.format(unitPrice)} / month${isUsagePriced(product) ? ' custom price' : ''}`;
+        const estimateText = usageEstimateText(product, unitPrice, item.users);
 
         $$(`[data-line-index="${index}"]`).forEach((lineNode) => {
             const priceP = lineNode.querySelector('.cart-line-body > p');
@@ -236,6 +262,35 @@
         $$('[data-cart-total]').forEach((node) => {
             node.textContent = displayMoney.format(total);
         });
+    }
+
+    function updatePrice(target, price, isLive = false) {
+        let index = -1;
+
+        if (typeof target === 'number') {
+            index = target;
+        } else if (typeof target === 'string') {
+            const parsed = Number.parseInt(target, 10);
+            if (Number.isFinite(parsed) && String(parsed) === target && cart[parsed]) {
+                index = parsed;
+            } else {
+                index = cart.findIndex((line) => line.id === target);
+            }
+        }
+
+        const item = cart[index];
+        const product = item ? productMap.get(item.id) : null;
+        if (!item || !product || !isUsagePriced(product)) return;
+
+        item.price = clampPrice(product, price);
+        item.users = priceToEstimatedUsers(product, item.price);
+        saveCart();
+
+        if (isLive && index >= 0) {
+            updateLiveCartTotals(index);
+        } else {
+            renderCart();
+        }
     }
 
     function updateUsers(target, users, isLive = false) {
@@ -257,6 +312,7 @@
         if (!item || !product || !isUsagePriced(product)) return;
 
         item.users = clampUsers(product, users);
+        item.price = productUnitPrice(product, item.users);
         saveCart();
 
         if (isLive && index >= 0) {
@@ -314,16 +370,15 @@
         const linesHtml = cart.map((item, index) => {
             const product = productMap.get(item.id);
             const usagePriced = isUsagePriced(product);
-            const lineTotal = lineTotalCents(item) / 100;
-            const unitPrice = productUnitPrice(product, item.users);
+            const unitPrice = item.price !== undefined && item.price !== null ? clampPrice(product, item.price) : productUnitPrice(product, item.users);
+            const lineTotal = unitPrice * Number(item.quantity || 1);
             const productImage = product.image || '/assets/images/market-og.svg';
             const productImageType = product.image_type || 'logo';
-            const currentUsers = usagePriced ? clampUsers(product, item.users) : null;
             const usageControls = usagePriced ? `
                 <label class="user-calculator">
-                    <span>Number of users</span>
-                    <input type="number" min="${Number(product.min_users || 1)}" max="10000000" step="1" value="${currentUsers}" data-users-input="${product.id}" data-line-index="${index}">
-                    <small class="usage-live-note">${usageEstimateText(product, currentUsers)}</small>
+                    <span>Monthly price ($)</span>
+                    <input type="number" min="${Number(product.min_price || 1)}" max="100000" step="1" value="${unitPrice}" data-price-input="${product.id}" data-users-input="${product.id}" data-line-index="${index}">
+                    <small class="usage-live-note">${usageEstimateText(product, unitPrice, item.users)}</small>
                 </label>
             ` : '';
             const controls = `
@@ -335,7 +390,7 @@
             `;
             const priceNote = item.quantity > 1
                 ? `${displayMoney.format(unitPrice)} / month × ${item.quantity} = <strong>${displayMoney.format(lineTotal)}</strong>`
-                : `${displayMoney.format(lineTotal)} / month${usagePriced ? ' based on users' : ''}`;
+                : `${displayMoney.format(unitPrice)} / month${usagePriced ? ' custom price' : ''}`;
 
             return `
                 <div class="cart-line" data-line-index="${index}">
@@ -349,6 +404,13 @@
                 </div>
             `;
         }).join('');
+
+        lineNodes.forEach((linesNode) => {
+            linesNode.innerHTML = linesHtml;
+        });
+
+        restoreUserInputFocus(focusState);
+    }
 
         lineNodes.forEach((linesNode) => {
             linesNode.innerHTML = linesHtml;

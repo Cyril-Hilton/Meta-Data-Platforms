@@ -273,13 +273,27 @@ function mdp_normalize_cart(array $rawItems): array
         $quantity = min($quantity, 99);
 
         if (($product['pricing_model'] ?? 'flat') === 'users') {
-            $defaultUsers = (int) ($product['default_users'] ?? $product['base_users'] ?? 1);
-            $minUsers = (int) ($product['min_users'] ?? 1);
-            $users = isset($item['users']) ? (int) $item['users'] : $defaultUsers;
+            $defaultPrice = (float) ($product['price'] ?? 250.0);
+            $minPrice = (float) ($product['min_price'] ?? 1.0);
+            $baseUsers = max(1, (int) ($product['base_users'] ?? 1));
+            $basePrice = max(0.01, (float) ($product['base_price'] ?? $product['price'] ?? $defaultPrice));
+
+            if (isset($item['price']) && is_numeric($item['price'])) {
+                $price = max($minPrice, (float) $item['price']);
+                $users = (int) round(($price / $basePrice) * $baseUsers);
+            } else {
+                $defaultUsers = (int) ($product['default_users'] ?? $baseUsers);
+                $minUsers = (int) ($product['min_users'] ?? 1);
+                $rawUsers = isset($item['users']) ? (int) $item['users'] : $defaultUsers;
+                $users = min(max($rawUsers, $minUsers), 10000000);
+                $price = round(max($minPrice, $basePrice * ($users / $baseUsers)), 2);
+            }
+
             $items[] = [
                 'id' => $id,
                 'quantity' => $quantity,
-                'users' => min(max($users, $minUsers), 10000000),
+                'price' => $price,
+                'users' => max(1, $users),
             ];
 
             continue;
@@ -294,8 +308,13 @@ function mdp_normalize_cart(array $rawItems): array
     return $items;
 }
 
-function mdp_product_unit_price(array $product, ?int $users = null): float
+function mdp_product_unit_price(array $product, ?int $users = null, ?float $customPrice = null): float
 {
+    if ($customPrice !== null && $customPrice > 0) {
+        $minPrice = (float) ($product['min_price'] ?? 1.0);
+        return round(max($minPrice, $customPrice), 2);
+    }
+
     if (($product['pricing_model'] ?? 'flat') !== 'users') {
         return round((float) $product['price'], 2);
     }
@@ -319,7 +338,8 @@ function mdp_cart_summary(array $cart): array
     foreach (mdp_normalize_cart($cart) as $line) {
         $product = $lookup[$line['id']];
         $users = isset($line['users']) ? (int) $line['users'] : null;
-        $unitPrice = mdp_product_unit_price($product, $users);
+        $customPrice = isset($line['price']) ? (float) $line['price'] : null;
+        $unitPrice = mdp_product_unit_price($product, $users, $customPrice);
         $priceCents = (int) round($unitPrice * 100);
         $lineTotal = $priceCents * $line['quantity'];
         $totalCents += $lineTotal;
@@ -329,6 +349,7 @@ function mdp_cart_summary(array $cart): array
             'image' => $product['image'],
             'image_type' => $product['image_type'] ?? 'logo',
             'quantity' => $line['quantity'],
+            'price' => $unitPrice,
             'users' => $users,
             'pricing_model' => $product['pricing_model'] ?? 'flat',
             'unit_price' => $unitPrice,

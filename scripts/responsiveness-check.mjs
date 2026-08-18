@@ -336,7 +336,7 @@ const dynamicPricingProbe = `(() => {
   const input = document.querySelector('#checkout [data-users-input="mnotify-sms-gateway-prepaid-bulk"]');
   if (!input) return { ok: false, message: 'mNotify usage input missing' };
 
-  input.value = '300000';
+  input.value = '750';
   input.dispatchEvent(new Event('input', { bubbles: true }));
 
   const section = document.querySelector('#checkout');
@@ -346,7 +346,7 @@ const dynamicPricingProbe = `(() => {
   const lineText = line?.textContent?.replace(/\\s+/g, ' ').trim() || '';
 
   return {
-    ok: total === '$1,385.00' && lineText.includes('300,000 users') && lineText.includes('$750.00'),
+    ok: total === '$1,385.00' && lineText.includes('$750.00'),
     total,
     lineText,
   };
