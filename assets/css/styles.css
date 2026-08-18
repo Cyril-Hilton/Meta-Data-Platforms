@@ -386,8 +386,7 @@ button {
 }
 
 .search-box input,
-.filter-box select,
-.checkout-form input {
+.filter-box select {
     width: 100%;
     min-height: 52px;
     border: 1px solid var(--line);
@@ -399,10 +398,20 @@ button {
 }
 
 .toolbar input,
-.toolbar select {
+.toolbar select,
+.checkout-form input {
     border-color: rgba(148, 163, 184, 0.45);
     color: #0f172a;
-    background: rgba(255, 255, 255, 0.86);
+    background: #ffffff;
+    width: 100%;
+    min-height: 52px;
+    border-radius: 16px;
+    padding: 0 16px;
+    outline: 0;
+}
+
+.checkout-form input::placeholder {
+    color: #64748b;
 }
 
 .search-box input:focus,

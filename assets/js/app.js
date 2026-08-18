@@ -209,7 +209,36 @@
         renderCart();
     }
 
-    function updateUsers(target, users) {
+    function updateLiveCartTotals(index) {
+        const item = cart[index];
+        if (!item) return;
+
+        const product = productMap.get(item.id);
+        if (!product) return;
+
+        const safeUsers = clampUsers(product, item.users);
+        const lineTotal = lineTotalCents(item) / 100;
+        const unitPrice = productUnitPrice(product, safeUsers);
+        const priceNote = item.quantity > 1
+            ? `${displayMoney.format(unitPrice)} / month × ${item.quantity} = <strong>${displayMoney.format(lineTotal)}</strong>`
+            : `${displayMoney.format(lineTotal)} / month${isUsagePriced(product) ? ' based on users' : ''}`;
+        const estimateText = usageEstimateText(product, safeUsers);
+
+        $$(`[data-line-index="${index}"]`).forEach((lineNode) => {
+            const priceP = lineNode.querySelector('.cart-line-body > p');
+            if (priceP) priceP.innerHTML = priceNote;
+
+            const estimateNote = lineNode.querySelector('.usage-live-note');
+            if (estimateNote) estimateNote.textContent = estimateText;
+        });
+
+        const total = cartTotalCents() / 100;
+        $$('[data-cart-total]').forEach((node) => {
+            node.textContent = displayMoney.format(total);
+        });
+    }
+
+    function updateUsers(target, users, isLive = false) {
         let index = -1;
 
         if (typeof target === 'number') {
@@ -229,7 +258,12 @@
 
         item.users = clampUsers(product, users);
         saveCart();
-        renderCart();
+
+        if (isLive && index >= 0) {
+            updateLiveCartTotals(index);
+        } else {
+            renderCart();
+        }
     }
 
     function renderCart() {
@@ -490,7 +524,8 @@
         const userInput = event.target.closest('[data-users-input]');
         if (userInput) {
             const lineIndex = userInput.dataset.lineIndex;
-            updateUsers(lineIndex !== undefined ? lineIndex : userInput.dataset.usersInput, userInput.value);
+            const isLive = event.type === 'input';
+            updateUsers(lineIndex !== undefined ? lineIndex : userInput.dataset.usersInput, userInput.value, isLive);
         }
     }
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meta-data-platforms-v10';
+const CACHE_NAME = 'meta-data-platforms-v11';
 const ASSETS = [
     '/assets/css/styles.css',
     '/assets/js/app.js',
@@ -35,14 +35,22 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    if (event.request.mode === 'navigate' || event.request.destination === 'document') {
-        event.respondWith(fetch(event.request));
+    if (event.request.mode === 'navigate' || ['document', 'script', 'style'].includes(event.request.destination)) {
+        event.respondWith(
+            fetch(event.request).then((response) => {
+                if (response.ok) {
+                    const clone = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+                }
+                return response;
+            }).catch(() => caches.match(event.request))
+        );
         return;
     }
 
     event.respondWith(
         caches.match(event.request).then((cached) => cached || fetch(event.request).then((response) => {
-            if (response.ok && ['style', 'script', 'image'].includes(event.request.destination)) {
+            if (response.ok && ['image'].includes(event.request.destination)) {
                 const clone = response.clone();
                 caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
             }
