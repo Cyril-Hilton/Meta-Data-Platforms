@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meta-data-platforms-v11';
+const CACHE_NAME = 'meta-data-platforms-v12';
 const ASSETS = [
     '/assets/css/styles.css',
     '/assets/js/app.js',
