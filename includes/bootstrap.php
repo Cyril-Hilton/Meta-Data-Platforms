@@ -266,32 +266,32 @@ function mdp_normalize_cart(array $rawItems): array
             continue;
         }
 
+        $quantity = isset($item['quantity']) ? (int) $item['quantity'] : 1;
+        if ($quantity < 1) {
+            continue;
+        }
+        $quantity = min($quantity, 99);
+
         if (($product['pricing_model'] ?? 'flat') === 'users') {
             $defaultUsers = (int) ($product['default_users'] ?? $product['base_users'] ?? 1);
             $minUsers = (int) ($product['min_users'] ?? 1);
             $users = isset($item['users']) ? (int) $item['users'] : $defaultUsers;
-            $items[$id] = [
+            $items[] = [
                 'id' => $id,
-                'quantity' => 1,
+                'quantity' => $quantity,
                 'users' => min(max($users, $minUsers), 10000000),
             ];
 
             continue;
         }
 
-        $quantity = isset($item['quantity']) ? (int) $item['quantity'] : 0;
-
-        if ($quantity < 1) {
-            continue;
-        }
-
-        $items[$id] = [
+        $items[] = [
             'id' => $id,
-            'quantity' => min($quantity, 99),
+            'quantity' => $quantity,
         ];
     }
 
-    return array_values($items);
+    return $items;
 }
 
 function mdp_product_unit_price(array $product, ?int $users = null): float

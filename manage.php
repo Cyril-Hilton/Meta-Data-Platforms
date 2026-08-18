@@ -34,20 +34,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $subscription && $subscriptionPath)
         $lookup = mdp_product_lookup();
         $updatedCart = [];
 
-        foreach ($subscription['items'] as $item) {
-            if (in_array($item['id'], $selected, true)) {
+        foreach ($subscription['items'] as $index => $item) {
+            $itemKey = (string) $index;
+            if (in_array($item['id'], $selected, true) || in_array($itemKey, $selected, true)) {
                 $product = $lookup[$item['id']] ?? null;
+                $quantity = max(1, (int) ($item['quantity'] ?? 1));
 
                 if (($product['pricing_model'] ?? 'flat') === 'users') {
                     $updatedCart[] = [
                         'id' => $item['id'],
-                        'quantity' => 1,
-                        'users' => (int) ($submittedUsers[$item['id']] ?? $item['users'] ?? $product['default_users'] ?? 1),
+                        'quantity' => $quantity,
+                        'users' => (int) ($submittedUsers[$itemKey] ?? $submittedUsers[$item['id']] ?? $item['users'] ?? $product['default_users'] ?? 1),
                     ];
                 } else {
                     $updatedCart[] = [
                         'id' => $item['id'],
-                        'quantity' => max(1, (int) $item['quantity']),
+                        'quantity' => $quantity,
                     ];
                 }
             }
@@ -175,8 +177,10 @@ $productLookup = mdp_product_lookup();
                     const baseUsers = Math.max(1, numberFrom(row.dataset.baseUsers, 1));
                     const basePrice = numberFrom(row.dataset.basePrice, 0);
                     const minPrice = numberFrom(row.dataset.minPrice, 0);
+                    const unitPrice = Math.round(Math.max(minPrice, basePrice * (users / baseUsers)) * 100) / 100;
+                    const qty = numberFrom(row.dataset.quantity, 1);
 
-                    return Math.round(Math.max(minPrice, basePrice * (users / baseUsers)) * 100) / 100;
+                    return Math.round(unitPrice * qty * 100) / 100;
                 }
 
                 return Math.round(numberFrom(row.dataset.unitPrice, 0) * numberFrom(row.dataset.quantity, 1) * 100) / 100;

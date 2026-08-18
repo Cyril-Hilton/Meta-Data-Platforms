@@ -21,7 +21,7 @@ return [
         'base_users' => 200,
         'default_users' => 200,
         'min_users' => 1,
-        'min_price' => 250.00,
+        'min_price' => 50.00,
         'image' => '/assets/images/maps.svg',
         'description' => 'Geofencing coordinate checks, outlet geocoding, and map rendering for field teams. Estimate: 20,000 map loads plus 20,000 geocoding lookups.',
     ],

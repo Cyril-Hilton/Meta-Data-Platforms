@@ -51,16 +51,17 @@
             const product = productMap.get(item.id);
             if (!product) return;
 
+            const quantity = Math.max(1, Math.min(99, Number(item.quantity || 1)));
+
             if (isUsagePriced(product)) {
                 normalized.push({
                     id: product.id,
-                    quantity: 1,
+                    quantity,
                     users: clampUsers(product, item.users),
                 });
                 return;
             }
 
-            const quantity = Math.max(1, Math.min(99, Number(item.quantity || 1)));
             normalized.push({ id: product.id, quantity });
         });
 
@@ -111,12 +112,13 @@
 
         return {
             id: active.dataset.usersInput,
+            lineIndex: active.dataset.lineIndex,
             listIndex: lineContainers.findIndex((node) => node.contains(active)),
         };
     }
 
     function restoreUserInputFocus(state) {
-        if (!state?.id) {
+        if (!state) {
             return;
         }
 
@@ -125,7 +127,10 @@
             ? $$('[data-users-input]', lineContainers[state.listIndex])
             : [];
         const fallbackInputs = $$('[data-users-input]');
-        const input = [...scopedInputs, ...fallbackInputs].find((node) => node.dataset.usersInput === state.id);
+        const allInputs = [...scopedInputs, ...fallbackInputs];
+        const input = (state.lineIndex !== undefined
+            ? allInputs.find((node) => node.dataset.lineIndex === String(state.lineIndex))
+            : null) || allInputs.find((node) => node.dataset.usersInput === state.id);
 
         if (!input) {
             return;
@@ -151,26 +156,26 @@
     }
 
     function addToCart(id) {
-        const found = cart.find((item) => item.id === id);
         const product = productMap.get(id);
 
         if (!product) return;
 
-        if (found) {
-            if (isUsagePriced(product)) {
-                found.users = clampUsers(product, found.users);
-                saveCart();
-                renderCart();
-                openCart();
-                toast(`${product.name} is already in cart. Adjust users in checkout.`);
-                return;
-            }
+        if (isUsagePriced(product)) {
+            const defaultUsers = clampUsers(product, product.default_users);
+            const found = cart.find((item) => item.id === id && item.users === defaultUsers);
 
-            found.quantity += 1;
+            if (found) {
+                found.quantity += 1;
+            } else {
+                cart.push({ id, quantity: 1, users: defaultUsers });
+            }
         } else {
-            cart.push(isUsagePriced(product)
-                ? { id, quantity: 1, users: clampUsers(product, product.default_users) }
-                : { id, quantity: 1 });
+            const found = cart.find((item) => item.id === id);
+            if (found) {
+                found.quantity += 1;
+            } else {
+                cart.push({ id, quantity: 1 });
+            }
         }
 
         saveCart();
@@ -178,28 +183,49 @@
         toast(`${product.name} added to cart`);
     }
 
-    function updateQuantity(id, delta) {
-        const item = cart.find((line) => line.id === id);
-        const product = productMap.get(id);
+    function updateQuantity(target, delta) {
+        let index = -1;
+
+        if (typeof target === 'number') {
+            index = target;
+        } else if (typeof target === 'string') {
+            const parsed = Number.parseInt(target, 10);
+            if (Number.isFinite(parsed) && String(parsed) === target && cart[parsed]) {
+                index = parsed;
+            } else {
+                index = cart.findIndex((line) => line.id === target);
+            }
+        }
+
+        const item = cart[index];
         if (!item) return;
 
-        if (isUsagePriced(product)) {
-            cart = cart.filter((line) => line.id !== id);
-        } else {
-            item.quantity += delta;
-            if (item.quantity <= 0) {
-                cart = cart.filter((line) => line.id !== id);
-            }
+        item.quantity += delta;
+        if (item.quantity <= 0) {
+            cart.splice(index, 1);
         }
 
         saveCart();
         renderCart();
     }
 
-    function updateUsers(id, users) {
-        const item = cart.find((line) => line.id === id);
-        const product = productMap.get(id);
-        if (!item || !isUsagePriced(product)) return;
+    function updateUsers(target, users) {
+        let index = -1;
+
+        if (typeof target === 'number') {
+            index = target;
+        } else if (typeof target === 'string') {
+            const parsed = Number.parseInt(target, 10);
+            if (Number.isFinite(parsed) && String(parsed) === target && cart[parsed]) {
+                index = parsed;
+            } else {
+                index = cart.findIndex((line) => line.id === target);
+            }
+        }
+
+        const item = cart[index];
+        const product = item ? productMap.get(item.id) : null;
+        if (!item || !product || !isUsagePriced(product)) return;
 
         item.users = clampUsers(product, users);
         saveCart();
@@ -251,36 +277,38 @@
             return;
         }
 
-        const linesHtml = cart.map((item) => {
+        const linesHtml = cart.map((item, index) => {
             const product = productMap.get(item.id);
             const usagePriced = isUsagePriced(product);
             const lineTotal = lineTotalCents(item) / 100;
+            const unitPrice = productUnitPrice(product, item.users);
             const productImage = product.image || '/assets/images/market-og.svg';
             const productImageType = product.image_type || 'logo';
             const currentUsers = usagePriced ? clampUsers(product, item.users) : null;
             const usageControls = usagePriced ? `
                 <label class="user-calculator">
                     <span>Number of users</span>
-                    <input type="number" min="${Number(product.min_users || 1)}" max="10000000" step="1" value="${currentUsers}" data-users-input="${product.id}">
+                    <input type="number" min="${Number(product.min_users || 1)}" max="10000000" step="1" value="${currentUsers}" data-users-input="${product.id}" data-line-index="${index}">
                     <small class="usage-live-note">${usageEstimateText(product, currentUsers)}</small>
                 </label>
             ` : '';
-            const controls = usagePriced ? `
-                <button class="remove-line" type="button" data-qty="${product.id}" data-delta="-1">Remove</button>
-            ` : `
+            const controls = `
                 <div class="quantity-controls" aria-label="Quantity controls for ${escapeHtml(product.name)}">
-                    <button type="button" data-qty="${product.id}" data-delta="-1">-</button>
+                    <button type="button" data-qty="${index}" data-delta="-1">-</button>
                     <strong>${item.quantity}</strong>
-                    <button type="button" data-qty="${product.id}" data-delta="1">+</button>
+                    <button type="button" data-qty="${index}" data-delta="1">+</button>
                 </div>
             `;
+            const priceNote = item.quantity > 1
+                ? `${displayMoney.format(unitPrice)} / month × ${item.quantity} = <strong>${displayMoney.format(lineTotal)}</strong>`
+                : `${displayMoney.format(lineTotal)} / month${usagePriced ? ' based on users' : ''}`;
 
             return `
-                <div class="cart-line">
+                <div class="cart-line" data-line-index="${index}">
                     <img class="line-logo cart-line-logo line-logo--${escapeHtml(productImageType)}" src="${escapeHtml(productImage)}" alt="" loading="lazy" decoding="async">
                     <div class="cart-line-body">
                         <h3>${escapeHtml(product.name)}</h3>
-                        <p>${displayMoney.format(lineTotal)} / month${usagePriced ? ' based on users' : ''}</p>
+                        <p>${priceNote}</p>
                         ${usageControls}
                     </div>
                     <div class="cart-line-actions">${controls}</div>
@@ -461,7 +489,8 @@
     function handleUserInputChange(event) {
         const userInput = event.target.closest('[data-users-input]');
         if (userInput) {
-            updateUsers(userInput.dataset.usersInput, userInput.value);
+            const lineIndex = userInput.dataset.lineIndex;
+            updateUsers(lineIndex !== undefined ? lineIndex : userInput.dataset.usersInput, userInput.value);
         }
     }
 
