@@ -576,11 +576,20 @@
     });
 
     function handleUserInputChange(event) {
+        const priceInput = event.target.closest('[data-price-input]');
         const userInput = event.target.closest('[data-users-input]');
-        if (userInput) {
-            const lineIndex = userInput.dataset.lineIndex;
+        const targetInput = priceInput || userInput;
+
+        if (targetInput) {
+            const lineIndex = targetInput.dataset.lineIndex;
             const isLive = event.type === 'input';
-            updateUsers(lineIndex !== undefined ? lineIndex : userInput.dataset.usersInput, userInput.value, isLive);
+            const targetId = targetInput.dataset.priceInput || targetInput.dataset.usersInput;
+
+            if (priceInput || targetInput.dataset.priceInput) {
+                updatePrice(lineIndex !== undefined ? lineIndex : targetId, targetInput.value, isLive);
+            } else {
+                updateUsers(lineIndex !== undefined ? lineIndex : targetId, targetInput.value, isLive);
+            }
         }
     }
 
