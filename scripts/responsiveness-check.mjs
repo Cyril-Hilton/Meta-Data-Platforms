@@ -272,8 +272,8 @@ const filterProbe = `(() => {
 const cartSetupProbe = `(() => {
   localStorage.setItem('mdp_cart_v2', JSON.stringify([
     { id: 'openai-ecosystem', quantity: 1 },
-    { id: 'google-maps-api-platform', quantity: 1, users: 400 },
-    { id: 'mnotify-sms-gateway-prepaid-bulk', quantity: 1, users: 200000 },
+    { id: 'google-maps-api-platform', quantity: 1, price: 500 },
+    { id: 'mnotify-sms-gateway-prepaid-bulk', quantity: 1, price: 500 },
     { id: 'stripe-billing-connector', quantity: 2 }
   ]));
   location.reload();
@@ -333,8 +333,8 @@ const checkoutProbe = `(() => {
 })()`;
 
 const dynamicPricingProbe = `(() => {
-  const input = document.querySelector('#checkout [data-users-input="mnotify-sms-gateway-prepaid-bulk"]');
-  if (!input) return { ok: false, message: 'mNotify usage input missing' };
+  const input = document.querySelector('#checkout [data-price-input="mnotify-sms-gateway-prepaid-bulk"]');
+  if (!input) return { ok: false, message: 'mNotify price input missing' };
 
   input.value = '750';
   input.dispatchEvent(new Event('input', { bubbles: true }));
