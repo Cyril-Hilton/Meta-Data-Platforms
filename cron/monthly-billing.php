@@ -89,12 +89,24 @@ foreach (glob(mdp_storage_path('subscriptions', '*.json')) ?: [] as $path) {
         $subscription['last_charge_at'] = gmdate('c');
         $subscription['next_charge_at'] = gmdate('c', strtotime('+1 month'));
         $subscription['failure_count'] = 0;
+        $subscription['status'] = 'active';
         $charged++;
     } else {
-        $subscription['failure_count'] = ((int) ($subscription['failure_count'] ?? 0)) + 1;
+        $failureCount = ((int) ($subscription['failure_count'] ?? 0)) + 1;
+        $subscription['failure_count'] = $failureCount;
         $subscription['last_failure_at'] = gmdate('c');
         $subscription['last_failure_message'] = (string) ($response['body']['message'] ?? 'Charge failed.');
-        $subscription['next_charge_at'] = gmdate('c', strtotime('+1 day'));
+
+        if ($failureCount >= 90) {
+            $subscription['status'] = 'cancelled';
+            $subscription['cancelled_at'] = gmdate('c');
+            $subscription['cancellation_reason'] = 'Subscription cancelled after 90 consecutive daily payment retry failures.';
+            $subscription['next_charge_at'] = null;
+        } else {
+            $subscription['status'] = 'active';
+            $subscription['next_charge_at'] = gmdate('c', strtotime('+1 day'));
+        }
+
         $failed++;
     }
 

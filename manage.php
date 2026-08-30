@@ -98,6 +98,9 @@ $productLookup = mdp_product_lookup();
             <p>We could not find an active subscription for this secure management link.</p>
         <?php else: ?>
             <p class="receipt-meta">Status: <strong><?= mdp_h(ucfirst((string) $subscription['status'])) ?></strong></p>
+            <?php if (!empty($subscription['cancellation_reason'])): ?>
+                <p class="receipt-meta">Reason: <em><?= mdp_h((string) $subscription['cancellation_reason']) ?></em></p>
+            <?php endif; ?>
             <p class="receipt-meta">Customer: <strong><?= mdp_h($subscription['customer_name']) ?></strong> · <?= mdp_h($subscription['email']) ?></p>
             <form method="post" class="manage-form">
                 <input type="hidden" name="token" value="<?= mdp_h($token) ?>">
