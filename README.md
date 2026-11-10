@@ -38,10 +38,14 @@ On local Windows PHP, Paystack SSL verification may require a CA bundle. The app
 
 ## Monthly billing cron
 
-The checkout stores reusable Paystack authorization details only after a successful verified payment and optional monthly billing consent. If the customer leaves monthly billing unchecked, the payment still completes but no subscription is created. Configure this cron once per day for customers who opted into monthly billing:
+The checkout stores reusable Paystack authorization details only after a successful verified payment and optional monthly billing consent. If the customer leaves monthly billing unchecked, the payment still completes but no subscription is created. Configure this cron to check every hour for due renewals and unresolved transactions for customers who opted into monthly billing:
 
 ```bash
-/usr/local/bin/php /home/rbfiqhyo/domains/metadataplatforms.9yttrybe.com/public_html/cron/monthly-billing.php >> /home/rbfiqhyo/domains/metadataplatforms.9yttrybe.com/public_html/storage/logs/monthly-billing.log 2>&1
+10 * * * * /usr/local/bin/php /home/rbfiqhyo/domains/metadataplatforms.9yttrybe.com/public_html/cron/monthly-billing.php >> /home/rbfiqhyo/domains/metadataplatforms.9yttrybe.com/public_html/storage/logs/monthly-billing.log 2>&1
 ```
 
-The script charges due active subscriptions and writes receipts into `storage/receipts`.
+The script charges due active subscriptions and writes receipts into `storage/receipts` only after independently verifying the successful payment, amount, currency, customer and reference. It locks concurrent runs and saves the attempt reference before sending a charge. Pending or uncertain attempts are reconciled using the same reference without resubmission. For subscriptions on the original schedule, definitively failed payments retry after one day for up to three calendar years from the first unsuccessful renewal attempt. A verified successful payment resets this retry window. Short months use the last valid day while preserving the billing day for the following month. Run with `--dry-run` to preview due amounts without charging. Operational results are written to the redirected log.
+
+Calendar billing is enabled per subscription. It records a separate installment every month on the 28th in Accra time, keeps unpaid installments open, and collects the oldest first. A verified failure pauses collection for that card for at least 24 hours and leaves the subscription active. Subscriptions sharing the same saved card can share a `collection_group`.
+
+To activate calendar billing, reconcile the customer's outstanding installments against Paystack and prepare a private JSON plan. Supply the subscription `reference`, the `first_bill_date` (a future 28th), and an explicit `overdue` list. Each overdue entry requires a `due_date` and either `use_subscription_terms: true` or a fixed `amount_cents` and `currency`. Use an empty list if the subscription is current. A plan can also wrap multiple entries in `subscriptions`. Run `php cron/monthly-billing.php --configure-calendar --dry-run < plan.json` to validate, then repeat without `--dry-run` to save. Configuration does not submit any charge. An unresolved legacy attempt requires reconciliation before activation. Only use `unrecorded_attempt_reference` after Paystack confirms the reference is missing and you have checked the customer's transaction history for a debit.

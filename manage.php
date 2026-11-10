@@ -20,6 +20,18 @@ foreach (glob(mdp_storage_path('subscriptions', '*.json')) ?: [] as $path) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $subscription && $subscriptionPath) {
+    // Read the latest state under the same lock as the billing job before updating the cart.
+    $billingLock = fopen(mdp_storage_path('logs', 'monthly-billing.lock'), 'c');
+    if ($billingLock === false || !flock($billingLock, LOCK_EX | LOCK_NB)) {
+        http_response_code(503);
+        exit('Billing is in progress. Please try again shortly.');
+    }
+    $subscription = json_decode((string) file_get_contents($subscriptionPath), true);
+    if (!is_array($subscription) || !hash_equals((string) ($subscription['manage_token'] ?? ''), $token)) {
+        http_response_code(404);
+        exit('Subscription not found.');
+    }
+
     $action = (string) ($_POST['action'] ?? '');
 
     if ($action === 'cancel') {
@@ -72,6 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $subscription && $subscriptionPath)
     }
 
     mdp_write_json($subscriptionPath, $subscription);
+    fclose($billingLock);
 }
 
 $currency = mdp_display_currency();
